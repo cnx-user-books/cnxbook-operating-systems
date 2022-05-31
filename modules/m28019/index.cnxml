@@ -1,0 +1,1043 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Synchronization, CPU Scheduling</title>
+  <metadata>
+  <md:content-id>m28019</md:content-id><md:title>Synchronization, CPU Scheduling</md:title>
+  <md:abstract>Synchronization, CPU Scheduling</md:abstract>
+  <md:uuid>bca0708a-5c63-416d-97ee-6c2c5b5730ec</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-84020115562">
+      <title>Race Conditions</title>
+      <para id="id3098698">A <emphasis>race condition</emphasis> occurs when two 
+(or more) processes are about to perform some action. Depending on the exact 
+timing, one or other goes first. If one of the processes goes first, everything 
+works, but if another one goes first, an error, possibly fatal, occurs. </para>
+      <para id="id3098717">Imagine two processes both accessing x, which is 
+initially 10. </para>
+      <list id="id3098723" list-type="bulleted">
+        <item>One process is to execute x x+1 </item>
+        <item>The other is to execute x x-1 </item>
+        <item>When both are finished x should be 10 </item>
+        <item>But we might get 9 and might get 11! </item>
+        <item>Show how this can happen (x x+1 is not atomic) </item>
+        <item>Tanenbaum shows how this can lead to disaster for a printer 
+spooler </item>
+      </list>
+    </section>
+    <section id="id-641404223717">
+      <title>Critical sections</title>
+      <para id="id3378715">We must prevent interleaving sections of code that 
+need to be atomic with respect to each other. That is, the conflicting sections 
+need <emphasis>mutual exclusion</emphasis>. If process A is executing its 
+critical section, it excludes process B from executing its critical section. 
+Conversely if process B is executing is critical section, it excludes process A 
+from executing its critical section. </para>
+      <para id="id3098672">Requirements for a critical section implementation. 
+</para>
+      <list id="id3098677" list-type="enumerated">
+        <item>No two processes may be simultaneously inside their critical 
+section. </item>
+        <item>No assumption may be made about the speeds or the number of CPUs. 
+</item>
+        <item>No process outside its critical section (including the entry and 
+exit code)may block other processes. </item>
+        <item>No process should have to wait forever to enter its critical 
+section. <list id="id3099409" list-type="bulleted"><item>I do 
+<emphasis>NOT</emphasis> make this last requirement. </item><item>I just require 
+that the system as a whole make progress (so not all processes are blocked). 
+</item><item>I refer to solutions that do not satisfy Tanenbaum's last condition 
+as unfair, but nonetheless correct, solutions. </item><item>Stronger fairness 
+conditions have also been defined. </item></list></item>
+      </list>
+    </section>
+    <section id="id-0521610087731">
+      <title>Mutual exclusion with busy waiting</title>
+      <para id="id3098766">The operating system can choose not to preempt 
+itself. That is, we do not preempt system processes (if the OS is client server) 
+or processes running in system mode (if the OS is self service). Forbidding 
+preemption for system processes would prevent the problem above where x x+1 not 
+being atomic crashed the printer spooler if the spooler is part of the OS. 
+</para>
+      <para id="id3479246">But simply forbidding preemption while in system mode 
+is not sufficient. </para>
+      <list id="id3479252" list-type="bulleted">
+        <item>Does not work for user-mode programs. So the Unix print spooler 
+would not be helped. </item>
+        <item>Does not prevent conflicts between the main line OS and interrupt 
+handlers. <list id="id3478704" list-type="bulleted"><item>This conflict could be 
+prevented by <emphasis>disabling interrupts</emphasis> while the main line is in 
+its critical section. </item><item>Indeed, disabling (a.k.a. temporarily 
+preventing) interrupts is often done for exactly this reason. </item><item>Do 
+not want to block interrupts for too long or the system will seem unresponsive. 
+</item></list></item>
+      </list>
+      <para id="id3484349">Does not work if the system has several processors. 
+</para>
+      <list id="id3484354" list-type="bulleted">
+        <item>Both main lines can conflict. </item>
+        <item>One processor cannot block interrupts on the other. </item>
+      </list>
+      <para id="id3484367">Software solutions for two processes</para>
+      <para id="id3484371">Initially P1wants=P2wants=false</para>
+      <para id="id3484375">Code for P1 Code for P2</para>
+      <para id="id3093452">Loop forever { Loop forever {</para>
+      <para id="id3093465">P1wants = true ENTRY P2wants = true</para>
+      <para id="id3093486">while (P2wants) {} ENTRY while (P1wants) {}</para>
+      <para id="id3098883">critical-section critical-section</para>
+      <para id="id3098901">P1wants = false EXIT P2wants = false</para>
+      <para id="id3479573">non-critical-section } non-critical-section }</para>
+      <para id="id3479589">Explain why this works. </para>
+      <para id="id3479593">But it is wrong! Why? (in case P1wants = P2wants = 
+true then deadlock occurs)</para>
+      <para id="id3489698">Let's try again. The trouble was that setting want 
+before the loop permitted us to get stuck. We had them in the wrong order! 
+</para>
+      <para id="id3489704">Initially P1wants=P2wants=false</para>
+      <para id="id3489708">Code for P1 Code for P2</para>
+      <para id="id3490264">Loop forever { Loop forever {</para>
+      <para id="id3490278">while (P2wants) {} ENTRY while (P1wants) {}</para>
+      <para id="id3490299">P1wants = true ENTRY P2wants = true</para>
+      <para id="id3510294">critical-section critical-section</para>
+      <para id="id3099966">P1wants = false EXIT P2wants = false</para>
+      <para id="id3099986">non-critical-section } non-critical-section }</para>
+      <para id="id3100002">Explain why this works. </para>
+      <para id="id3478956">But it is wrong again! Why? (both processes may enter 
+the CS)</para>
+      <para id="id3478971">So let's be polite and really take turns. None of 
+this wanting stuff. </para>
+      <para id="id3478976">Initially turn=1</para>
+      <para id="id3478981">Code for P1 Code for P2</para>
+      <para id="id3478990">Loop forever { Loop forever {</para>
+      <para id="id3098796">while (turn = 2) {} while (turn = 1) {}</para>
+      <para id="id3098813">critical-section critical-section</para>
+      <para id="id3098829">turn = 2 turn = 1</para>
+      <para id="id3099315">non-critical-section } non-critical-section }</para>
+      <para id="id3099330">This one forces alternation, so is not general 
+enough. Specifically, it does not satisfy condition three, which requires that 
+no process in its non-critical section can stop another process from entering 
+its critical section. With alternation, if one process is in its non-critical 
+section (NCS) then the other can enter the CS once but not again. </para>
+      <para id="id3099340">The first example violated rule 4 (the whole system 
+blocked). The second example violated rule 1 (both in the critical section. The 
+third example violated rule 3 (one process in the NCS stopped another from 
+entering its CS). </para>
+      <para id="id3099348">In fact, it took years (way back when) to find a 
+correct solution. Many earlier “solutions” were found and several were 
+published, but all were wrong. The first correct solution was found by a 
+mathematician named Dekker, who combined the ideas of turn and wants. The basic 
+idea is that you take turns when there is contention, but when there is no 
+contention, the requesting process can enter. It is very clever, but I am 
+skipping it (I cover it when I teach distributed operating systems in V22.0480 
+or G22.2251). Subsequently, algorithms with better fairness properties were 
+found (e.g., no task has to wait for another task to enter the CS twice). 
+</para>
+      <para id="id3568289">What follows is Peterson's solution, which also 
+combines turn and wants to force alternation only when there is contention. When 
+Peterson's solution was published, it was a surprise to see such a simple 
+soluntion. In fact Peterson gave a solution for any number of processes. A proof 
+that the algorithm satisfies our properties (including a strong fairness 
+condition) for any number of processes can be found in Operating Systems Review 
+Jan 1990, pp. 18-22. </para>
+      <para id="id3568311">Initially P1wants=P2wants=false and turn=1</para>
+      <para id="id3568315">Code for P1 Code for P2</para>
+      <para id="id3098941">Loop forever { Loop forever {</para>
+      <para id="id3098954">P1wants = true P2wants = true</para>
+      <para id="id3098971">turn = 2  turn = 1</para>
+      <para id="id3479415">while (P2wants and turn=2) {} while (P1wants and 
+turn=1) {}</para>
+      <para id="id3479430">critical-section critical-section</para>
+      <para id="id3516068">P1wants = false P2wants = false</para>
+      <para id="id3516085">non-critical-section non-critical-section</para>
+      <para id="id3516102">}}</para>
+      <para id="id3484209">Hardware assist (test and set)</para>
+      <para id="id3484213">TAS(b), where b is a binary variable, ATOMICALLY sets 
+b = true and returns the OLD value of b.</para>
+      <para id="id3484222">Of course it would be silly to return the new value 
+of b since we know the new value is true. </para>
+      <para id="id3484229">The word <emphasis>atomically</emphasis> means that 
+the two actions performed by TAS(x) (testing, i.e., returning the old value of x 
+and setting, i.e., assigning true to x) are inseparable. Specifically it is not 
+possible for two concurrent TAS(x) operations to both return false (unless there 
+is also another concurrent statement that sets x to false). </para>
+      <para id="id3014518">With TAS available implementing a critical section 
+for any number of processes is trivial. </para>
+      <para id="id3014523">loop forever {</para>
+      <para id="id3014528">while (TAS(s)) {} ENTRY</para>
+      <para id="id3014542">CS</para>
+      <para id="id3014549">s = false EXIT</para>
+      <para id="id3554585">NCS</para>
+      <para id="id3554592">}</para>
+    </section>
+    <section id="id-341380886029">
+      <title>Sleep and Wakeup</title>
+      <para id="id3554604"><emphasis>Remark:</emphasis> Tanenbaum does both busy 
+waiting (as above) and blocking (process switching) solutions. We will only do 
+busy waiting, which is easier. Sleep and Wakeup are the simplest blocking 
+primitives. Sleep voluntarily blocks the process and wakeup unblocks a sleeping 
+process. We will not cover these. </para>
+      <para id="id3554622"><emphasis>Question:</emphasis> Explain the difference 
+between busy waiting and blocking process synchronization. </para>
+    </section>
+    <section id="id-831862667917">
+      <title>Semaphores</title>
+      <para id="id3609981"><emphasis>Remark:</emphasis> Tannenbaum use the term 
+semaphore only for blocking solutions. I will use the term for our busy waiting 
+solutions. Others call our solutions spin locks. </para>
+      <para id="id3477906">P and V and Semaphores</para>
+      <para id="id3477910">The entry code is often called P and the exit code V. 
+Thus the critical section problem is to write P and V so that </para>
+      <para id="id3477916">loop forever</para>
+      <para id="id3477921">P</para>
+      <para id="id3477928">critical-section</para>
+      <para id="id3477936">V</para>
+      <para id="id3477944">non-critical-section</para>
+      <para id="id3014699">satisfies </para>
+      <list id="id3014703" list-type="enumerated">
+        <item>Mutual exclusion. </item>
+        <item>No speed assumptions. </item>
+        <item>No blocking by processes in NCS. </item>
+        <item>Forward progress (my weakened version of Tanenbaum's last 
+condition). </item>
+      </list>
+      <para id="id3014729">Note that I use indenting carefully and hence do not 
+need (and sometimes omit) the braces {} used in languages like C or java. 
+</para>
+      <para id="id3014735">A <emphasis>binary semaphore</emphasis> abstracts the 
+TAS solution we gave for the critical section problem. </para>
+      <list id="id3752612" list-type="bulleted">
+        <item>A binary semaphore S takes on two possible values “open” and 
+“closed”. </item>
+        <item>Two operations are supported </item>
+        <item>P(S) is </item>
+        <item>while (S=closed) {}</item>
+        <item>S&lt;--closed &lt;== This is NOT the body of the while</item>
+      </list>
+      <para id="id3709816">where finding S=open and setting S&lt;--closed is 
+atomic </para>
+      <list id="id3709833" list-type="bulleted">
+        <item>That is, wait until the gate is open, then run through and 
+atomically close the gate </item>
+        <item>Said another way, it is not possible for two processes doing P(S) 
+simultaneously to both see S=open (unless a V(S) is also simultaneous with both 
+of them). </item>
+        <item>V(S) is simply S&lt;--open </item>
+      </list>
+      <para id="id3709857">The above code is not real, i.e., it is not an 
+implementation of P. It is, instead, a definition of the effect P is to have. 
+</para>
+      <para id="id3725220">To repeat: for any number of processes, the critical 
+section problem can be solved by </para>
+      <para id="id3725226">loop forever</para>
+      <para id="id3725231">P(S)</para>
+      <para id="id3725238">CS</para>
+      <para id="id3725245">V(S)</para>
+      <para id="id3725253">NCS</para>
+      <para id="id3515774">The only specific solution we have seen for an 
+arbitrary number of processes is the one just above with P(S) implemented via 
+test and set. </para>
+      <para id="id3515781"><emphasis>Remark</emphasis>: Peterson's solution 
+requires each process to know its processor number. The TAS soluton does not. 
+Moreover the definition of P and V does not permit use of the processor number. 
+Thus, strictly speaking Peterson did not provide an implementation of P and V. 
+He did solve the critical section problem. </para>
+      <para id="id3515798">To solve other coordination problems we want to 
+extend binary semaphores. </para>
+      <list id="id3515804" list-type="bulleted">
+        <item>With binary semaphores, two consecutive Vs do not permit two 
+subsequent Ps to succeed (the gate cannot be doubly opened). </item>
+        <item>We might want to limit the number of processes in the section to 3 
+or 4, not always just 1. </item>
+      </list>
+      <para id="id3515821">Both of the shortcomings can be overcome by not 
+restricting ourselves to a binary variable, but instead define a 
+<emphasis>generalized</emphasis> or <emphasis>counting</emphasis> semaphore. 
+</para>
+      <list id="id3099808" list-type="bulleted">
+        <item>A counting semaphore S takes on non-negative integer values 
+</item>
+        <item>Two operations are supported </item>
+        <item>P(S) is </item>
+        <item>while (S=0) {}</item>
+        <item>S--</item>
+      </list>
+      <para id="id3516019">where finding S&gt;0 and decrementing S is atomic 
+</para>
+      <list id="id3516037" list-type="bulleted">
+        <item>That is, wait until the gate is open (positive), then run through 
+and atomically close the gate one unit </item>
+        <item>Another way to describe this atomicity is to say that it is not 
+possible for the decrement to occur when S=0 and it is also not possible for two 
+processes executing P(S) simultaneously to both see the same necessarily 
+(positive) value of S unless a V(S) is also simultaneous. </item>
+        <item>V(S) is simply S++ </item>
+      </list>
+      <para id="id3489201">These counting semaphores can solve what I call the 
+semi-critical-section problem, where you premit up to k processes in the 
+section. When k=1 we have the original critical-section problem. </para>
+      <para id="id3489219">initially S=k</para>
+      <para id="id3489224">loop forever</para>
+      <para id="id3489228">P(S)</para>
+      <para id="id3489236">SCS &lt;== semi-critical-section</para>
+      <para id="id3489254">V(S)</para>
+      <para id="id3478512">NCS</para>
+      <para id="id3478519">Producer-consumer problem</para>
+      <list id="id3478523" list-type="bulleted">
+        <item>Two classes of processes <list id="id3478532" list-type="bulleted"><item>Producers, which produce times and insert them into a 
+buffer. </item><item>Consumers, which remove items and consume them. 
+</item></list></item>
+        <item>What if the producer encounters a full buffer?Answer: It waits for 
+the buffer to become non-full. </item>
+        <item>What if the consumer encounters an empty buffer?Answer: It waits 
+for the buffer to become non-empty. </item>
+        <item>Also called the <emphasis>bounded buffer</emphasis> problem. <list id="id3510543" list-type="bulleted"><item>Another example of active entities being 
+replaced by a data structure when viewed at a lower level (Finkel's level 
+principle). </item></list></item>
+      </list>
+      <para id="id3510551">Initially e=k, f=0 (counting semaphore); b=open 
+(binary semaphore)</para>
+      <para id="id3510556">Producer Consumer</para>
+      <para id="id3510570">loop forever loop forever</para>
+      <para id="id3510585">produce-item P(f)</para>
+      <para id="id3510603">P(e) P(b); take item from buf; V(b)</para>
+      <para id="id3488942">P(b); add item to buf; V(b) V(e)</para>
+      <para id="id3488959">V(f) consume-item</para>
+      <list id="id3488977" list-type="bulleted">
+        <item>k is the size of the buffer </item>
+        <item>e represents the number of empty buffer slots </item>
+        <item>f represents the number of full buffer slots </item>
+        <item>We assume the buffer itself is only serially accessible. That is, 
+only one operation at a time. <list id="id3515653" list-type="bulleted"><item>This 
+explains the P(b) V(b) around buffer operations </item><item>I use; and put 
+three statements on one line to suggest that a buffer insertion or removal is 
+viewed as one atomic operation. </item><item>Of course this writing style is 
+only a convention, the enforcement of atomicity is done by the P/V. 
+</item></list></item>
+        <item>The P(e), V(f) motif is used to force “bounded alternation”. If 
+k=1 it gives strict alternation. </item>
+      </list>
+    </section>
+    <section id="id-430590228072">
+      <title>Semaphore implementation</title>
+      <para id="id3515711">Unfortunately, it is rare to find hardware that 
+implements P &amp; V directly (or messages, or monitors). They all involve some 
+sort of scheduling and it is not clear that scheduling stuff belongs in hardware 
+(layering). Thus semaphores must be built up in software using some lower-level 
+synchronization primitive provided by hardware. </para>
+      <para id="id3515715">Need a simple way of doing mutual exclusion in order 
+to implement P's and V's. We could use atomic reads and writes, as in "too much 
+milk" problem, but these are very clumsy. </para>
+      <para id="id3490041">Uniprocessor solution: Disable interrupts.</para>
+      <code id="id1171740980118" display="block">class semaphore {
+    private int count;
+
+    public semaphore (int init)
+    {
+        count = init;
+    }
+
+    public void P ()
+    {
+        while (1) {
+              Disable interrupts;
+              if (count &gt; 0) {
+                   count--;
+                   Enable interrupts;
+              } else {
+                   Enable interrupts;
+              }
+        }
+    }
+
+    public void V ()
+    {
+        Disable interrupts;
+        count++;
+        Enable interrupts;
+    }
+}
+</code>
+      <para id="id3098507">What is wrong with this code? </para>
+      <para id="id3098511">Multiprocessor solution:</para>
+      <para id="id3098515">Step 1: when P fails, put process to sleep; on V just 
+wake up everybody, processes all try P again. </para>
+      <para id="id3098521">Step 2: label each process with semaphore it's 
+waiting for, then just wakeup relevant processes. </para>
+      <para id="id3098527">Step 3: just wakeup a single process. </para>
+      <para id="id3098531">Step 4: add a queue of waiting processes to the 
+semaphore. On failed P, add to queue. On V, remove from queue. </para>
+      <para id="id3098537">Why can we get away with only removing one process 
+from queue at a time? </para>
+      <para id="id3098542">There are several tradeoffs implicit here: how many 
+processes in the system, how much queuing on semaphores, storage requirements, 
+etc. The most important thing is to avoid busy-waiting. </para>
+      <para id="id3489326">Is it "busy-waiting" if we use the solution in step 1 
+above? </para>
+      <para id="id3489331">What do we do in a multiprocessor to implement P's 
+and V's? Cannot just turn off interrupts to get low-level mutual exclusion. 
+</para>
+      <list id="id3489338" list-type="bulleted">
+        <item>Turn off all other processors? </item>
+        <item>Use atomic “add item” and “take item”, as in "producer-consumer"? 
+</item>
+      </list>
+      <para id="id3098546">In a multiprocessor, there must be busy-waiting at 
+some level: cannot go to sleep if do not have mutual exclusion. </para>
+      <para id="id3489373">Most machines provide some sort of atomic read-
+modify-write instruction. Read existing value, store back in one atomic 
+operation. </para>
+      <list id="id3489390" list-type="bulleted">
+        <item>E.g. Atomic increment. </item>
+        <item>E.g. Test and set (IBM solution). Set value to one, but return OLD 
+value. Use ordinary write to set back to zero. </item>
+        <item>Read-modify-writes may be implemented directly in memory hardware, 
+or in the processor by refusing to release the memory bus. </item>
+      </list>
+      <para id="id3477958">Using test and set for mutual exclusion: It is like a 
+binary semaphore in reverse, except that it does not include waiting. 1 means 
+someone else is already using it, 0 means it is OK to proceed. Definition of 
+test and set prevents two processes from getting a 0-&gt;1 transition 
+simultaneously. </para>
+      <para id="id3477971">
+        <media id="id1171733407578" alt=""><image src="../../media/graphics1-6f19.png" mime-type="image/png" height="355" width="470"/></media>
+      </para>
+      <para id="id3478007">Test and set is tricky to use. Using test and set to 
+implement semaphores: For each semaphore, keep a test-and-set integer in 
+addition to the semaphore integer and the queue of waiting processes. </para>
+      <code id="id1171737276447" display="block">class semaphore {
+    private int t;
+    private int count;
+    private queue q;
+        
+    public semaphore(int init)
+    {
+        t = 0;
+        count = init;
+        q = new queue();
+    }
+
+    public void P()
+    {
+        Disable interrupts;
+        while (TAS(t) != 0) { /* just spin */ };
+        if (count &gt; 0) {
+            count--;
+            t = 0;
+            Enable interrupts;
+            return;
+        }
+        Add process to q;
+        t = 0;
+        Enable interrupts;
+        Redispatch;
+    }
+
+    public V()
+    {
+        Disable interrupts;
+        while (TAS(t) != 0) { /* just spin */ };
+        if (q == empty) {
+            count++;
+        } else {
+            Remove first process from q;
+            Wake it up;
+        }
+        t = 0;
+        Enable interrupts;
+    }
+}
+</code>
+      <para id="id3529791">Why do we still have to disable interrupts in 
+addition to using test and set? </para>
+      <para id="id3529796">Important point: implement some mechanism once, very 
+carefully. Then always write programs that use that mechanism. Layering is very 
+important. </para>
+    </section>
+    <section id="id-495222258583">
+      <title>Mutexes</title>
+      <para id="id3529811"><emphasis>Remark:</emphasis> Whereas we use the term 
+semaphore to mean binary semaphore and explicitly say generalized or counting 
+semaphore for the positive integer version, Tanenbaum uses semaphore for the 
+positive integer solution and mutex for the binary version. Also, as indicated 
+above, for Tanenbaum semaphore/mutex implies a blocking primitive; whereas I use 
+binary/counting semaphore for both busy-waiting and blocking implementations. 
+Finally, remember that in this course we are studying <emphasis>only</emphasis> 
+busy-waiting solutions. </para>
+    </section>
+    <section id="id-522611874788">
+      <title>Monitors</title>
+      <para id="id3686867">Monitors are a high-level data abstraction tool 
+combining three features: </para>
+      <list id="id3686879" list-type="bulleted">
+        <item>Shared data. </item>
+        <item>Operations on the data. </item>
+        <item>Synchronization, scheduling. </item>
+      </list>
+      <para id="id3686899">They are especially convenient for synchronization 
+involving lots of state. </para>
+      <para id="id3686904">Existing implementations of monitors are embedded in 
+programming languages. Best existing implementations are the Java programming 
+language from Sun and the Mesa language from Xerox. </para>
+      <para id="id3686912">There is one binary semaphore associated with each 
+monitor, mutual exclusion is implicit: P on entry to any routine, V on exit. 
+This synchronization is automatically done by the compiler (because he makes 
+automatic calls to the OS), and the programmer does not seem them. They come for 
+free when the programmer declares a module to be a monitor. </para>
+      <para id="id3686922">Monitors are a higher-level concept than P and V. 
+They are easier and safer to use, but less flexible, at least in raw form as 
+above. </para>
+      <para id="id3529826">Probably the best implementation is in the Mesa 
+language, which extends the simple model above with several additions to 
+increase the flexibility and efficiency. </para>
+      <para id="id3883283">Do an example: implement a producer/consumer pair. 
+</para>
+      <para id="id3883288">The "classic" Hoare-style monitor (using C++ style 
+syntax): </para>
+      <code id="id1171746028635" display="block">class QueueHandler {
+
+    private:
+        static int BUFFSIZE = 200;
+        int first;
+        int last;
+        int buff[BUFFSIZE];
+        condition full;
+        condition empty;
+
+	int ModIncr(int v) {
+	    return (v+1)%BUFFSIZE;
+	}
+
+    public:
+        void QueueHandler (int);
+        void AddToQueue (int);
+        int RemoveFromQueue ();
+    };
+
+
+
+    void
+    QueueHandler::QueueHandler (int val)
+    {
+	first = last = 0;
+    }
+
+    void
+    QueueHandler::AddToQueue (int val) {
+    {
+	while (ModIncr(last) == first) {
+	    full.wait();
+	}
+	buff[last] = val;
+	last = ModIncr(last);
+	empty.notify();
+    }
+
+    int
+    QueueHandler::RemoveFromQueue ();
+    {
+	while (first == last) {
+	    empty.wait();
+	}
+	int ret = buff[first];
+	first = ModIncr(first);
+	full.notify();
+	return ret;
+    }
+</code>
+      <para id="id3510484">Java only allows one condition variable (implicit) 
+per object. Here is the same solution in Java: </para>
+      <code id="id1171740639890" display="block">class QueueHandler {
+
+        final static int BUFFSIZE = 200;
+        private int first;
+        private int last;
+        private int buff[BUFFSIZE];
+
+
+        private int ModIncr(int v) {
+            return (v+1)%BUFFSIZE;
+        }
+
+        public QueueHandler (int val)
+        {
+            first = last = 0;
+        }
+
+        public synchronized void AddToQueue (int val) {
+        {
+            while (ModIncr(last) == first) {
+                try { wait(); }
+                catch (InterruptedException e) {}
+            }
+            buff[last] = val;
+            last = ModIncr(last);
+            notify();
+        }
+
+        public synchronized int RemoveFromQueue ();
+        {
+            while (first == last) {
+                try { wait(); }
+                catch (InterruptedException e) {}
+            }
+            int ret = buff[first];
+            first = ModIncr(first);
+            notify();
+            return ret;
+        }
+</code>
+      <para id="id3840988">Condition variables: things to wait on. Two types: 
+(1) classic Hoare/Mesa condition variables and (2) Java condition variables. 
+</para>
+      <para id="id3840994">Hoare/Mesa condition variables: </para>
+      <list id="id3840998" list-type="bulleted">
+        <item>condition.wait(): release monitor lock, put process to sleep. When 
+process wakes up again, re-acquire monitor lock immediately. </item>
+        <item>condition.notify(): wake up one process waiting on the condition 
+variable (FIFO). If nobody waiting, do nothing. </item>
+        <item>condition.broadcast(): wake up all processes waiting on the 
+condition variable. If nobody waiting, do nothing. </item>
+      </list>
+      <para id="id3841045">Java condition variables: </para>
+      <list id="id3841049" list-type="bulleted">
+        <item>wait(): release monitor lock on current object; put thread to 
+sleep. </item>
+        <item>notify(): wake up one process waiting on the condition; this 
+process will try to reacquire the monitor lock. </item>
+        <item>notifyall(): wake up all processes waiting on the condition; each 
+process will try to reacquire the monitor lock. (Of course, only one at a time 
+will acquire the lock.) </item>
+      </list>
+      <para id="id3841074">Show how wait and notify solve the semaphore 
+implementation problem. Mention that they can be used to implement any 
+scheduling mechanism at all. How do wait and notify compare to P and V? </para>
+      <para id="id3841093">Do the readers' and writers' problem with monitors. 
+</para>
+      <para id="id3841098">Summary: </para>
+      <list id="id3841103" list-type="bulleted">
+        <item>Not present in very many languages (yet), but extremely useful. 
+Java is making monitors much more popular and well known. </item>
+        <item>Semaphores use a single structure for both exclusion and 
+scheduling, monitors use different structures for each. </item>
+        <item>A mechanism similar to wait/notify is used internally to Unix for 
+scheduling OS processes. </item>
+        <item>Monitors are more than just a synchronization mechanism. Basing an 
+operating system on them is an important decision about the structure of the 
+entire system. </item>
+      </list>
+    </section>
+    <section id="id-579756330126">
+      <title>Message Passing</title>
+      <para id="id3466222">Up until now, discussion has been about communication 
+using shared data. Messages provide for communication without shared data. One 
+process or the other owns the data, never two at the same time. </para>
+      <para id="id3466242">Message = a piece of information that is passed from 
+one process to another. </para>
+      <para id="id3466247">Mailbox = a place where messages are stored between 
+the time they are sent and the time they are received. </para>
+      <para id="id3466253">Operations: </para>
+      <list id="id3466258" list-type="bulleted">
+        <item>Send: place a message in a mailbox. If the mailbox is full, wait 
+until there is enough space in the mailbox. </item>
+        <item>Receive: remove a message from a mailbox. If the mailbox is empty, 
+then wait until a message is placed in it. </item>
+      </list>
+      <figure id="id3466278">
+        <media id="id1171744887303" alt=""><image src="../../media/graphics2-1e91.png" mime-type="image/png" height="240" width="536"/></media>
+      </figure>
+      <para id="id3466302">There are two general styles of message 
+communication: </para>
+      <list id="id3466318" list-type="bulleted">
+        <item>1-way: messages flow in a single direction (Unix pipes, or 
+producer/consumer):</item>
+      </list>
+      <figure id="id3466331">
+        <media id="id1338190" alt=""><image src="../../media/graphics3-15b6.png" mime-type="image/png" height="214" width="546"/></media>
+      </figure>
+      <list id="id3842642" list-type="bulleted">
+        <item>2-way: messages flow in circles (remote procedure call, or 
+client/server):</item>
+      </list>
+      <figure id="id3842655">
+        <media id="id1171746340602" alt=""><image src="../../media/graphics4-8f43.png" mime-type="image/png" height="239" width="598"/></media>
+      </figure>
+      <para id="id3842679">Producer &amp; consumer example:</para>
+      <table id="id3842685" summary="">
+        <tgroup cols="2">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>
+                <emphasis>Producer </emphasis>
+              </entry>
+              <entry>
+                <emphasis>Consumer </emphasis>
+              </entry>
+            </row>
+            <row>
+              <entry>int buffer1[1000];while (1) {-- prepare buffer1 --
+mbox.send(&amp;buffer1);};</entry>
+              <entry>int buffer2[1000];while (1) {mbox.receive(&amp;buffer2);-- 
+process buffer2 --};</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para id="id3842799">Note that buffer recycling is implicit, whereas it 
+was explicit in the semaphore implementation. </para>
+      <para id="id3842805">Client &amp; Server example:</para>
+      <table id="id3842810" summary="">
+        <tgroup cols="2">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>
+                <emphasis>Client </emphasis>
+              </entry>
+              <entry>
+                <emphasis>Server </emphasis>
+              </entry>
+            </row>
+            <row>
+              <entry>int buffer1[1000];mbox1.send("read 
+rutabaga");mbox2.receive(&amp;buffer);</entry>
+              <entry>int buffer2[1000];int 
+command[1000];mbox1.receive(&amp;command);-- decode command ---- read file into 
+buffer2 --mbox2.send(&amp;buffer2);</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para id="id3843100">Note that this looks a lot like a procedure 
+call&amp;return. Explain the various analogs between procedure calls and message 
+operations: </para>
+      <list id="id3843110" list-type="bulleted">
+        <item>Parameters: </item>
+        <item>Result: </item>
+        <item>Name of procedure: </item>
+        <item>Return address: </item>
+      </list>
+      <para id="id3843136">Why use messages? </para>
+      <list id="id3843141" list-type="bulleted">
+        <item>Many kinds of applications fit into the model of processing a 
+sequential flow of information, including all of the Unix filters. </item>
+        <item>The component parties can be totally separate, except for the 
+mailbox: <list id="id3843158" list-type="bulleted"><item>Less error-prone, because no 
+invisible side effects: no process has access to another's memory. 
+</item><item>They might not trust each other (OS vs. user). </item><item>They 
+might have been written at different times by different programmers who knew 
+nothing about each other. </item><item>They might be running on different 
+processors on a network, so procedure calls are out of the question. 
+</item></list></item>
+      </list>
+      <para id="id3843186">Which are more powerful, messages or monitors? 
+</para>
+      <para id="id3843194">Message systems vary along several dimensions: 
+</para>
+      <list id="id3843200" list-type="bulleted">
+        <item>Relationship between mailboxes and processes: <list id="id3843209" list-type="bulleted"><item>One mailbox per process, use process name 
+in send and receive (simple but restrictive) [RC4000]. </item><item>No strict 
+mailbox-process association, use mailbox name (can have multiple mailboxes per 
+process, can pass mailboxes from process to process, but trickier to implement) 
+[Unix]. </item></list></item>
+        <item>Extent of buffering: <list id="id3843230" list-type="bulleted"><item>Buffering (more efficient for large transfers when sender 
+and receiver run at varying speeds). </item><item>None -- rendezvous protocols 
+(simple, OK for call-return type communication, know that message was received). 
+</item></list></item>
+        <item>Conditional vs. unconditional ops: <list id="id3843251" list-type="bulleted"><item>Unconditional receive: return message if mailbox is not 
+empty, otherwise wait until message arrives. </item><item>Conditional receive: 
+return message if mailbox is not empty, otherwise return special "empty" value. 
+</item><item>Unconditional send: wait until mailbox has space. 
+</item><item>Conditional send: return "full" if no space in mailbox (message is 
+discarded). </item></list></item>
+      </list>
+      <para id="id3843279">What happens with rendezvous protocols and 
+conditional operations? </para>
+      <list id="id3843284" list-type="bulleted">
+        <item>Additional forms of waiting: <list id="id3843293" list-type="bulleted"><item>Almost all systems allow many processes to wait on the same 
+mailbox at the same time. Messages get passed to processes in order. 
+</item><item>A few systems allow each process to wait on several mailboxes at 
+once. The process gets the first message to arrive on any of the mailboxes. This 
+is actually quite useful (give Caesar as an example). </item></list></item>
+        <item>Constraints on what gets passed in messages: <list id="id3843316" list-type="bulleted"><item>None: just a stream of bytes (Unix pipes). 
+</item><item>Enforce message boundaries (send and receive in same chunks). 
+</item><item>Protected objects (e.g. a token for a mailbox). 
+</item></list></item>
+      </list>
+      <para id="id3843335">How would the following systems fall into the above 
+classifications? </para>
+      <list id="id3843340" list-type="bulleted">
+        <item>Condition variables </item>
+        <item>Unix pipes </item>
+      </list>
+    </section>
+    <section id="id-654098729978">
+      <title>Classical IPC Problems</title>
+      <section id="id-834198289196">
+        <title>The Dining Philosophers Problem</title>
+        <para id="id3843369">A classical problem from Dijkstra </para>
+        <list id="id3843373" list-type="bulleted">
+          <item>5 philosophers sitting at a round table </item>
+          <item>Each has a plate of spaghetti </item>
+          <item>There is a fork between each two </item>
+          <item>Need two forks to eat </item>
+        </list>
+        <para id="id3843397">What algorithm do you use for access to the shared 
+resource (the forks)? </para>
+        <list id="id3843402" list-type="bulleted">
+          <item>The obvious solution (pick up right; pick up left) deadlocks. 
+</item>
+          <item>Big lock around everything serializes. </item>
+          <item>Good code in the book. </item>
+        </list>
+        <para id="id3843423">The purpose of mentioning the Dining Philosophers 
+problem without giving the solution is to give a feel of what coordination 
+problems are like. The book gives others as well. We are skipping these (again 
+this material would be covered in a sequel course). </para>
+      </section>
+      <section id="id-272656846449">
+        <title>The Readers and Writers Problem</title>
+        <list id="id3843439" list-type="bulleted">
+          <item>Two classes of processes. <list id="id3843447" list-type="bulleted"><item>Readers, which can work concurrently. </item><item>Writers, 
+which need exclusive access. </item></list></item>
+          <item>Must prevent 2 writers from being concurrent. </item>
+          <item>Must prevent a reader and a writer from being concurrent. 
+</item>
+          <item>Must permit readers to be concurrent when no writer is active. 
+</item>
+          <item>Perhaps want fairness (e.g., freedom from starvation). </item>
+          <item>Variants </item>
+        </list>
+        <list id="id3853885" list-type="bulleted">
+          <item>Writer-priority readers/writers. </item>
+          <item>Reader-priority readers/writers. </item>
+        </list>
+        <para id="id3853896">Quite useful in multiprocessor operating systems 
+and database systems. The “easy way out” is to treat all processes as writers in 
+which case the problem reduces to mutual exclusion (P and V). The disadvantage 
+of the easy way out is that you give up reader concurrency. Again for more 
+information see the web page referenced above. </para>
+      </section>
+      <section id="id-356058931684">
+        <title>The barbershop problem</title>
+        <para id="id3853920">The original barbershop problem was proposed by 
+Dijkstra. A variation of it appears in Silberschatz and Galvin’s Operating 
+Systems Concepts. A barbershop consists of a waiting room with n chairs, and the 
+barber room containing the barber chair. If there are no customers to be served, 
+the barber goes to sleep. If a customer enters the barbershop and all chairs are 
+occupied, then the customer leaves the shop. If the barber is busy, but chairs 
+are available, then the customer sits in one of the free chairs. If the barber 
+is asleep, the customer wakes up the barber. Write a program to coordinate the 
+barber and the customers.</para>
+      </section>
+    </section>
+    <section id="id-656036619948">
+      <title>Scheduling</title>
+      <para id="id3853950">Until now we have talked about processes, from now on 
+we will talk about resources, the things operated upon by processes. Resources 
+range from cpu time to disk space to channel I/O time. </para>
+      <para id="id3853969">Resources fall into two classes: </para>
+      <list id="id3853973" list-type="bulleted">
+        <item>Preemptible: processor or I/O channel. Can take resource away, use 
+it for something else, then give it back later. </item>
+        <item>Non-preemptible: once given, it cannot be reused until process 
+gives it back. Examples are file space, terminal, and maybe memory. </item>
+      </list>
+      <para id="id3853991">OS makes two related kinds of decisions about 
+resources: </para>
+      <list id="id3853996" list-type="bulleted">
+        <item>Allocation: who gets what. Given a set of requests for resources, 
+which processes should be given which resources in order to make most efficient 
+use of the resources? Implication is that resources are not easily preemptible. 
+</item>
+        <item>Scheduling: how long can they keep it. When more resources are 
+requested than can be granted immediately, in which order should they be 
+serviced? Examples are processor scheduling (one processor, many processes), 
+memory scheduling in virtual memory systems. Implication is that resource is 
+preemptible. </item>
+      </list>
+    </section>
+    <section id="id-76057178162">
+      <title>CPU Scheduling</title>
+      <para id="id3854027">Processes may be in any one of three general 
+scheduling states: </para>
+      <list id="id3854032" list-type="bulleted">
+        <item>Running.</item>
+        <item>Ready. That is, waiting for CPU time. Scheduler and dispatcher 
+determine transitions between this and running state.</item>
+        <item>Blocked. Waiting for some other event: disk I/O, message, 
+semaphore, etc. Transitions into and out of this state are caused by various 
+processes.</item>
+      </list>
+      <para id="id3854056">There are two parts to CPU scheduling: </para>
+      <list id="id3854060" list-type="bulleted">
+        <item>The dispatcher provides the basic mechanism for running 
+processes.</item>
+        <item>The scheduler is a piece of OS code that decides the priorities of 
+processes and how long each will run.</item>
+      </list>
+      <para id="id3854098">This is an example of policy/mechanism separation. 
+</para>
+      <para id="id3854103">Goals for Scheduling Disciplines </para>
+      <list id="id3854107" list-type="bulleted">
+        <item>Efficiency of resource utilization (keep CPU and disks 
+busy).</item>
+        <item>Minimize overhead (context swaps).</item>
+        <item>Minimize response time. (Define response time.)</item>
+        <item>Distribute cycles equitably. What does this mean?</item>
+      </list>
+      <section id="id-526735864687">
+        <title>FCFS (also called FIFO) </title>
+        <para id="id3854164">Run until finished. </para>
+        <para id="id3854171">
+          <media id="id2074338" alt=""><image src="../../media/graphics5-765f.png" mime-type="image/png" height="95" width="673"/></media>
+        </para>
+        <list id="id3854205" list-type="bulleted">
+          <item>In the simplest case this means uniprogramming.</item>
+          <item>Usually, "finished" means "blocked". One process can use CPU 
+while another waits on a semaphore. Go to back of run queue when ready.</item>
+          <item>Problem: one process can monopolize CPU.</item>
+        </list>
+        <para id="id3854227">Solution: limit maximum amount of time that a 
+process can run without a context switch. This time is called a time slice. 
+</para>
+      </section>
+      <section id="id-187976445894">
+        <title>Round Robin </title>
+        <para id="id3854253">Run process for one time slice, then move to back 
+of queue. Each process gets equal share of the CPU. Most systems use some 
+variant of this. What happens if the time slice is not chosen carefully? </para>
+        <para id="id3854264">
+          <media id="id1171737195824" alt=""><image src="../../media/graphics6-c726.png" mime-type="image/png" height="392" width="449"/></media>
+        </para>
+        <para id="id3854298">Originally, Unix had 1 sec. time slices. Too long. 
+Most timesharing systems today use time slices of 10,000 - 100,000 instructions. 
+</para>
+        <para id="id3854304">Implementation of priorities: run highest priority 
+processes first, use round-robin among processes of equal priority. Re-insert 
+process in run queue behind all processes of greater or equal priority. </para>
+        <para id="id3854312">Even round-robin can produce bad results 
+occasionally. Go through example of ten processes each requiring 100 time 
+slices. </para>
+        <para id="id3854318">What is the best we can do? </para>
+      </section>
+      <section id="id-303995623265">
+        <title>STCF</title>
+        <para id="id3854330">Shortest time to completion first with preemption. 
+This minimizes the average response time. </para>
+        <para id="id3854339">
+          <media id="id2390521" alt=""><image src="../../media/graphics7-d6de.png" mime-type="image/png" height="100" width="673"/></media>
+        </para>
+        <para id="id3854373">As an example, show two processes, one doing 1 ms 
+computation followed by 10 ms I/O, one doing all computation. Suppose we use 100 
+ms time slice: I/O process only runs at 1/10th speed, effective I/O time is 100 
+ms. Suppose we use 1 ms time slice: then compute-bound process gets interrupted 
+9 times unnecessarily for each valid interrupt. STCF works quite nicely. </para>
+        <para id="id3854384">Unfortunately, STCF requires knowledge of the 
+future. Instead, we can use past performance to predict future performance. 
+</para>
+      </section>
+      <section id="id-894062333686">
+        <title>Exponential Queue (also called "multi-level feedback 
+queues")</title>
+        <para id="id3896608">Attacks both efficiency and response time problems. 
+</para>
+        <para id="id3896618">
+          <media id="id1171734664548" alt=""><image src="../../media/graphics8-366e.png" mime-type="image/png" height="459" width="392"/></media>
+        </para>
+        <list id="id3896652" list-type="bulleted">
+          <item>Give newly runnable process a high priority and a very short 
+time slice. If process uses up the time slice without blocking then decrease 
+priority by 1 and double time slice for next time.</item>
+          <item>Go through the above example, where the initial values are 1ms 
+and priority 100.</item>
+          <item>Techniques like this one are called adaptive. They are common in 
+interactive systems.</item>
+          <item>The CTSS system (MIT, early 1960's) was the first to use 
+exponential queues.</item>
+        </list>
+        <para id="id3896694">Fair-share scheduling as implemented in Unix: 
+</para>
+        <list id="id3896699" list-type="bulleted">
+          <item>Figure out each process' "share" of CPU, based on number of 
+processes and priorities.</item>
+          <item>Keep a history of recent CPU usage for each process: if it is 
+getting less than its share, boost priority. If it is getting more than its 
+share, reduce priority.</item>
+          <item>Careful: could be unstable!</item>
+        </list>
+        <para id="id3896722">Summary: </para>
+        <list id="id3896726" list-type="bulleted">
+          <item>In principle, scheduling algorithms can be arbitrary, since the 
+system should behave the same in any event.</item>
+          <item>However, the algorithms have crucial effects on the behavior of 
+the system: <list id="id3896744" list-type="bulleted"><item>Overhead: number of 
+context swaps.</item><item>Efficiency: utilization of CPU and 
+devices.</item><item>Response time: how long it takes to do 
+something.</item></list></item>
+          <item>The best schemes are adaptive. To do absolutely best, we would 
+have to be able to predict the future.</item>
+        </list>
+      </section>
+    </section>
+    <section id="id-661063033584">
+      <title>Priority Inversion Problem</title>
+      <para id="id3896777">There are some curious interactions between 
+scheduling and synchronization. A classic problem caused by this interaction was 
+first observed in 1979 but Butler Lampson and David Redell at Xerox. </para>
+      <para id="id3896784">Suppose that you have three processes: </para>
+      <table id="id3896789" summary="">
+        <tgroup cols="2">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <tbody>
+            <row>
+              <entry>P1:</entry>
+              <entry>Highest priority</entry>
+            </row>
+            <row>
+              <entry>P2:</entry>
+              <entry>Medium priority</entry>
+            </row>
+            <row>
+              <entry>P3:</entry>
+              <entry>Lowest priority</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para id="id3896904">And suppose that you have the following critical 
+section, S: </para>
+      <para id="id3896910">S: mutex.P()</para>
+      <para id="id3896920">. . .</para>
+      <para id="id3896927">. . .</para>
+      <para id="id3896935">mutex.V()</para>
+      <para id="id3896942">The three processes execute as follows: </para>
+      <list id="id3896946" list-type="enumerated">
+        <item>P3 enters S, locking the critical section. </item>
+        <item>P3 is preempted by the scheduler and P2 starts running. </item>
+        <item>P2 is preempted by the scheduler and P1 starts running. </item>
+        <item>P1 tries to enter S and is blocked at the P operation. </item>
+        <item>P2 starts running again, preventing P1 from running. </item>
+      </list>
+      <para id="id3897059">So, what's going wrong here? To really understand 
+this situation, you should try to work out the example for yourself, before 
+continuing to read. </para>
+      <list id="id3897078" list-type="bulleted">
+        <item>As long as process P2 is running, process P3 cannot run. </item>
+        <item>If P3 cannot run, then it cannot leave the critical section S. 
+</item>
+        <item>If P3 does not leave the critical section, then P1 cannot enter. 
+</item>
+      </list>
+      <para id="id3913829">As a result, P2 running (at medium priority) is 
+blocking P1 (at highest priority) from running. This example is not an academic 
+one. Many designers of real-time systems, where priority can be crucial, have 
+stumbled over issue. You can read the <link url="http://www.cs.wisc.edu/%7Ebart/736/papers/mesa.pdf">original paper by 
+Lampson and Redell</link> to see their suggestion for handling the 
+situation.</para>
+    </section>
+  </content>
+</document>

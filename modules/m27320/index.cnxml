@@ -1,0 +1,180 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Introduction to Operating Systems</title>
+  <metadata>
+  <md:content-id>m27320</md:content-id><md:title>Introduction to Operating Systems</md:title>
+  <md:abstract>Introduction to Operating Systems</md:abstract>
+  <md:uuid>6348fcd9-58f4-485c-a0de-b65fa4031bf6</md:uuid>
+</metadata>
+
+<content>
+    <para id="id24945089">Operating system is a hard term to define. Silberschatz e.t. defines that “<emphasis>an operating system is a program that manages the computer hardware.</emphasis>” However, what you consider an operating system depends on your needs and your view of the system. The first view is that operating system is a scheduler/simulator, on this view, the operating system has resources for which it is in charge, responsible for handing them out as well as recovering them later. Resources here include CPU, memory, I/O devices, and disk space. The second view is that operating system is a virtual machine, it means operating system provides a new machine. This machine could be the same as the underlying machine. Allows many users to believe they have an entire piece of hardware to themselves. This could implement a different, perhaps more powerful machine. Or just a different machine entirely. It may be useful to be able to completely simulate another machine with your current hardware. The other view is that operating system is a multiplexor which allows sharing of resources, provides protection from interference, and provides for a level of cooperation between users. This also for the economic reasons, we can’t afford for all resources.</para>
+    <para id="id23375645">According to these three views, if we have enough hardware to give anyone too much; the hardware was well defined; the sharing problem is solved then we would not need operating systems. Unfortunatly, they will still be needed as a servant or provider of services: need to provide things like in the above views, but deal with environments that are less than perfect, need to help the users use the computer by: providing commonly used subroutines; providing access to hardware facilities; providing higher-level "abstract" facilities; providing an environment which is easy, pleasant, and productive to use. This view as a provider of services fits well with our modern network view of computing, where most resources are services.</para>
+    <para id="id27251298">Internally, operating systems vary greatly in their makeup, since they are organized along many different lines. The design of a new operating system is a major task. It is important that the goals of the system be well defined before the design begins. These goals form the basis for choices among various algorithms and strategies.</para>
+    <para id="id26009915">Because an operating system is large and complex, it must be created piece by piece. Each of these pieces should be well delineated portion of the system, with carefully defined inputs, outputs, and functions.</para>
+    <section id="id-276990459093">
+      <title>What are the desires of an operating system? </title>
+      <para id="id26040971">We can discuss them in term of: Usability, Facilities, Cost, and Adaptability.</para>
+      <section id="id-502727915406">
+        <title>Usability:</title>
+        <list id="id23995410" list-type="bulleted">
+          <item>Robustness</item>
+        </list>
+        <para id="id22890297">OS accept all valid inputs withour error, and gracefully handle all invalid inputs. OS would not be crashed in any circumtances, and could be recovered in the case that we suddenly remove hardware while they are running, or lost of power supplied.</para>
+        <list id="id24697777" list-type="bulleted">
+          <item>Consistency </item>
+        </list>
+        <para id="id21136190">For example, if "-" means options flags in one place, it means it in another. The key idea is <emphasis>conventions</emphasis>. We should base on the concept: The Principle of Least Astonishment. This helps us easy to understand and adapt with the new system.</para>
+        <list id="id25423980" list-type="bulleted">
+          <item>Proportionality Simple, cheap and frequent things are easy. Also, expensive and disastrous things are hard. </item>
+          <item>Forgiving Errors can be recovered from. Reasonable error messages. Example from "rm"; UNIX vs. TOPS. </item>
+          <item>Convenient Not necessary to repeat things, or do awkward procedures to accomplish things. Example copying a file took a batch job. </item>
+          <item>Powerful Has high level facilities.</item>
+        </list>
+      </section>
+      <section id="id-452890628473">
+        <title>Facilities</title>
+        <list id="id26417597" list-type="bulleted">
+          <item>The system should supply sufficient for intended use </item>
+          <item>The facilities is complete, don’t leave out any part of a facility.</item>
+          <item>Appropriate, e.g. do not use fixed-width field input from terminal</item>
+        </list>
+      </section>
+      <section id="id-242801322168">
+        <title>Cost</title>
+        <list id="id17517353" list-type="bulleted">
+          <item>Want low cost and efficient services. </item>
+          <item>Good algorithms. Make use of space/time tradeoffs, special hardware. </item>
+          <item>Low overhead. Cost of doing nothing should be low. E.g., idle time at a terminal. </item>
+          <item>Low maintenance cost. System should not require constant attention. </item>
+        </list>
+      </section>
+      <section id="id-870224995496">
+        <title>Adaptability </title>
+        <list id="id24598983" list-type="bulleted">
+          <item>Tailored to the environment. Support necessary activities. Do not impose unnecessary restrictions. What are the things people do most -- make them easy. </item>
+          <item>Changeable over time. Adapt as needs and resources change. E.g., expanding memory and new devices, or new user population. </item>
+          <item>Extendible-Extensible: Adding new facilities and features - which look like the old ones. </item>
+        </list>
+      </section>
+    </section>
+    <section id="id-828833684027">
+      <title>Two main perspectives of an operating system</title>
+      <list id="id26368854" list-type="bulleted">
+        <item>Outside view: whether your system can support for those kinds of program, do they have many facilities: compiler, database, do they easy to use! At this level we focus on what services the system provides.</item>
+        <item>Inside view: related to the internals, code, data structures. This is the system programmer view of an operating system. At this level you understand not only what is provided, but how it is provided.</item>
+      </list>
+    </section>
+    <section id="id-744279094537">
+      <title>Five main components of an operating system</title>
+      <section id="id-0883629101074">
+        <title>Process management</title>
+        <para id="id24553003"><emphasis>Process is a system abstraction, it illustrates that system has only one job to do</emphasis>. Every program running on a computer, be it background services or applications, is a process. As long as a von Neumann architecture is used to build computers, only one process per CPU can be run at a time. Older microcomputer OSes such as MS-DOS did not attempt to bypass this limit, with the exception of interrupt processing, and only one process could be run under them. Mainframe operating systems have had multitasking capabilities since the early 1960s. Modern operating systems enable concurrent execution of many processes at once via multitasking even with one CPU. Process management is an operating system's way of dealing with running multiple processes. Since most computers contain one processor with one core, multitasking is done by simply switching processes quickly. Depending on the operating system, as more processes run, either each time slice will become smaller or there will be a longer delay before each process is given a chance to run. Process management involves computing and distributing CPU time as well as other resources. Most operating systems allow a process to be assigned a priority which affects its allocation of CPU time. Interactive operating systems also employ some level of feedback in which the task with which the user is working receives higher priority. Interrupt driven processes will normally run at a very high priority. In many systems there is a background process, such as the System Idle Process in Windows, which will run when no other process is waiting for the CPU.</para>
+      </section>
+      <section id="id-0666006055494">
+        <title>Memory management</title>
+        <para id="id26467757">Current computer architectures arrange the computer's memory in a hierarchical manner, starting from the fastest registers, CPU cache, random access memory and disk storage. An operating system's memory manager coordinates the use of these various types of memory by tracking which one is available, which is to be allocated or deallocated and how to move data between them. This activity, usually referred to as virtual memory management, increases the amount of memory available for each process by making the disk storage seem like main memory. There is a speed penalty associated with using disks or other slower storage as memory – if running processes require significantly more RAM than is available, the system may start thrashing. This can happen either because one process requires a large amount of RAM or because two or more processes compete for a larger amount of memory than is available. This then leads to constant transfer of each process's data to slower storage.</para>
+        <para id="id26203531">Another important part of memory management is managing virtual addresses. If multiple processes are in memory at once, they must be prevented from interfering with each other's memory (unless there is an explicit request to utilise shared memory). This is achieved by having separate address spaces. Each process sees the whole virtual address space, typically from address 0 up to the maximum size of virtual memory, as uniquely assigned to it. The operating system maintains a page table that matches virtual addresses to physical addresses. These memory allocations are tracked so that when a process terminates, all memory used by that process can be made available for other processes.</para>
+        <para id="id25326463">The operating system can also write inactive memory pages to secondary storage. This process is called "paging" or "swapping" – the terminology varies between operating systems.</para>
+        <para id="id26958895">It is also typical for operating systems to employ otherwise unused physical memory as a page cache; requests for data from a slower device can be retained in memory to improve performance. The operating system can also pre-load the in-memory cache with data that may be requested by the user in the near future; SuperFetch is an example of this.</para>
+      </section>
+      <section id="id-239827080931">
+        <title>Disk and file systems</title>
+        <para id="id23922516">All operating systems include support for a variety of file systems.</para>
+        <para id="id27375886">Modern file systems comprise a hierarchy of directories. While the idea is conceptually similar across all general-purpose file systems, some differences in implementation exist. Two noticeable examples of this are the character used to separate directories, and case sensitivity.</para>
+        <para id="id26285008">Unix demarcates its path components with a slash (/), a convention followed by operating systems that emulated it or at least its concept of hierarchical directories, such as Linux, Amiga OS and Mac OS X. MS-DOS also emulated this feature, but had already also adopted the CP/M convention of using slashes for additional options to commands, so instead used the backslash (\) as its component separator. Microsoft Windows continues with this convention; Japanese editions of Windows use ¥, and Korean editions use ₩. Versions of Mac OS prior to OS X use a colon (:) for a path separator. RISC OS uses a period (.).</para>
+        <para id="id25897911">Unix and Unix-like operating allow for any character in file names other than the slash, and names are case sensitive. Microsoft Windows file names are not case sensitive.</para>
+        <para id="id20715197">File systems may provide journaling, which provides safe recovery in the event of a system crash. A journaled file system writes information twice: first to the journal, which is a log of file system operations, then to its proper place in the ordinary file system. In the event of a crash, the system can recover to a consistent state by replaying a portion of the journal. In contrast, non-journaled file systems typically need to be examined in their entirety by a utility such as fsck or chkdsk. Soft update is an alternative to journalling that avoids the redundant writes by carefully ordering the update operations. Log-structured file systems and ZFS also differ from traditional journaled file systems in that they avoid inconsistencies by always writing new copies of the data, eschewing in-place updates.</para>
+        <para id="id27399391">Many Linux distributions support some or all of ext2, ext3, ReiserFS, Reiser4, GFS, GFS2, OCFS, OCFS2, and NILFS. Linux also has full support for XFS and JFS, along with the FAT file systems, and NTFS.</para>
+        <para id="id26288096">Microsoft Windows includes support for FAT12, FAT16, FAT32, and NTFS. The NTFS file system is the most efficient and reliable of the four Windows file systems, and as of Windows Vista, is the only file system which the operating system can be installed on. Windows Embedded CE 6.0 introduced ExFAT, a file system suitable for flash drives.</para>
+        <para id="id27132594">Mac OS X supports HFS+ as its primary file system, and it supports several other file systems as well, including FAT16, FAT32, NTFS and ZFS.</para>
+        <para id="id14014763">Common to all these (and other) operating systems is support for file systems typically found on removable media. FAT12 is the file system most commonly found on floppy discs. ISO 9660 and Universal Disk Format are two common formats that target Compact Discs and DVDs, respectively. Mount Rainier is a newer extension to UDF supported by Linux 2.6 kernels and Windows-Vista that facilitates rewriting to DVDs in the same fashion as what has been possible with floppy disks.</para>
+      </section>
+      <section id="id-86513983037">
+        <title>Networking</title>
+        <para id="id27377556">Most current operating systems are capable of using the TCP/IP networking protocols. This means that one system can appear on a network of the other and share resources such as files, printers, and scanners using either wired or wireless connections.</para>
+        <para id="id20467014">Many operating systems also support one or more vendor-specific legacy networking protocols as well, for example, SNA on IBM systems, DECnet on systems from Digital Equipment Corporation, and Microsoft-specific protocols on Windows. Specific protocols for specific tasks may also be supported such as NFS for file access.</para>
+      </section>
+      <section id="id-668480100346">
+        <title>Security</title>
+        <para id="id26472090">Many operating systems include some level of security. Security is based on the two ideas that:</para>
+        <list id="id22148317" list-type="bulleted">
+          <item>The operating system provides access to a number of resources, directly or indirectly, such as files on a local disk, privileged system calls, personal information about users, and the services offered by the programs running on the system;</item>
+          <item>The operating system is capable of distinguishing between some requesters of these resources who are authorized (allowed) to access the resource, and others who are not authorized (forbidden). While some systems may simply distinguish between "privileged" and "non-privileged", systems commonly have a form of requester identity, such as a user name. Requesters, in turn, divide into two categories: </item>
+          <item>Internal security: an already running program. On some systems, a program once it is running has no limitations, but commonly the program has an identity which it keeps and is used to check all of its requests for resources.</item>
+          <item>External security: a new request from outside the computer, such as a login at a connected console or some kind of network connection. To establish identity there may be a process of authentication. Often a username must be quoted, and each username may have a password. Other methods of authentication, such as magnetic cards or biometric data, might be used instead. In some cases, especially connections from the network, resources may be accessed with no authentication at all.</item>
+        </list>
+        <para id="id26283106">In addition to the allow/disallow model of security, a system with a high level of security will also offer auditing options. These would allow tracking of requests for access to resources (such as, "who has been reading this file?").</para>
+        <para id="id22758475">Security of operating systems has long been a concern because of highly sensitive data held on computers, both of a commercial and military nature. The <link url="http://en.wikipedia.org/wiki/United_States">United States</link><link url="http://en.wikipedia.org/wiki/Government_of_the_United_States">Government</link> Department of Defense (DoD) created the Trusted Computer System Evaluation Criteria (TCSEC) which is a standard that sets basic requirements for assessing the effectiveness of security. This became of vital importance to operating system makers, because the TCSEC was used to evaluate, classify and select computer systems being considered for the processing, storage and retrieval of sensitive or classified information.</para>
+      </section>
+    </section>
+    <section id="id-291691574573">
+      <title>Operating systems Market share 2007</title>
+      <figure id="id26217062">
+        <media id="id1169182312854" alt=""><image src="../../media/graphics1-6169.png" mime-type="image/png" height="366" width="276"/></media>
+      </figure>
+    </section>
+    <section id="id-773885149716">
+      <title>Questions to ask about operating systems.</title>
+      <section id="id-836339486965">
+        <title>Why are operating systems important? </title>
+        <list id="id27430091" list-type="bulleted">
+          <item>They consume more resources than any other program. </item>
+        </list>
+        <para id="id25270823">They may only use up a small percentage of the CPU time, but consider how many machines use the same program, all the time. </para>
+        <list id="id26405463" list-type="bulleted">
+          <item>They are the most complex programs. </item>
+        </list>
+        <para id="id26073923">They perform more functions for more users than any other program. </para>
+        <list id="id22889700" list-type="bulleted">
+          <item>They are necessary for any use of the computer. </item>
+        </list>
+        <para id="id26290396">When "the (operating) system" is down, the computer is down. Reliability and recovery from errors becomes critical. </para>
+        <list id="id25535773" list-type="bulleted">
+          <item>They are used by many users. </item>
+        </list>
+        <para id="id24479599">More hours of user time is spent dealing with the operating system. Visible changes in the operating system cause many changes to the users. </para>
+        <para id="id24771757">
+          <link url="file:///tmp/%5B1%5D%20http://marketshare.hitslink.com/report.aspx%3Fqprid=2&amp;qpmr=15&amp;qpdt=1&amp;qpct=3&amp;qptimeframe=M&amp;qpsp=101">[1]</link>
+          <link url="file:///tmp/%5B1%5D%20http://marketshare.hitslink.com/report.aspx%3Fqprid=2&amp;qpmr=15&amp;qpdt=1&amp;qpct=3&amp;qptimeframe=M&amp;qpsp=101"/>
+          <link url="file:///tmp/%5B1%5D%20http://marketshare.hitslink.com/report.aspx%3Fqprid=2&amp;qpmr=15&amp;qpdt=1&amp;qpct=3&amp;qptimeframe=M&amp;qpsp=101">http://marketshare.hitslink.com/report.aspx?qprid=2&amp;qpmr=15&amp;qpdt=1&amp;qpct=3&amp;qptimeframe=M&amp;qpsp=101</link>
+        </para>
+      </section>
+      <section id="id-624602509255">
+        <title>Why are operating systems difficult to create, use, and maintain?</title>
+        <list id="id27403381" list-type="bulleted">
+          <item>Size - too big for one person </item>
+        </list>
+        <para id="id27399446">Current systems have many millions lines of code. Involve 10-100 person years to build. </para>
+        <list id="id23260459" list-type="bulleted">
+          <item>Lifetime - the systems remain around longer than the programmers who wrote them. </item>
+        </list>
+        <para id="id24931187">The code is written and rewritten. Original intent is forgotten (UNIX was designed to be cute, little system - now 2 volumes this thick). Bug curve should be decreasing; but actually periodic - draw. </para>
+        <list id="id20971945" list-type="bulleted">
+          <item>Complexity - the system must do difficult things. </item>
+        </list>
+        <para id="id26612527">Deal with ugly I/O devices, multiplexing-juggling act, handle errors (<emphasis>hard!</emphasis>). </para>
+        <list id="id26028273" list-type="bulleted">
+          <item>Asynchronous - must do several things at once. </item>
+        </list>
+        <para id="id26135629">Handles interrupts, and must change what it is doing thousands of times a second - and still get work done. </para>
+        <list id="id24744313" list-type="bulleted">
+          <item>General purpose - must do many different things. </item>
+        </list>
+        <para id="id25302958">Run Doom, Java, Fortran, Lisp, Trek, Databases, Web Servers, etc. Everybody wants their stuff to run well. </para>
+      </section>
+    </section>
+    <section id="id-69132641484">
+      <title>History of Operating Systems</title>
+      <list id="id26314497" list-type="enumerated"><item>Single user (no OS).</item>
+        <item>Batch, uniprogrammed, run to completion. <list id="id24802395" list-type="bulleted"><item>The OS now must be protected from the user program so that it is capable of starting (and assisting) the next program in the batch. </item></list></item>
+        <item>Multiprogrammed <list id="id26472834" list-type="bulleted"><item>The purpose was to overlap CPU and I/O </item><item>Multiple batches <list id="id23870192" list-type="bulleted"><item>IBM OS/MFT (Multiprogramming with a Fixed number of Tasks) <list id="id25949630" list-type="bulleted"><item>OS for IBM system 360. </item><item>The (real) memory is partitioned and a batch is assigned to a fixed partition. </item><item>The memory assigned to a partition does not change. </item><item>Jobs were <emphasis>spooled</emphasis> from cards into the memory by a separate processor (an IBM 1401). Similarly output was spooled from the memory to a printer (a 1403) by the 1401. </item></list></item><item>IBM OS/MVT (Multiprogramming with a Variable number of Tasks) (then other names) <list id="id26092317" list-type="bulleted"><item>Each job gets just the amount of memory it needs. That is, the partitioning of memory changes as jobs enter and leave </item><item>MVT is a more “efficient” user of resources, but is more difficult. </item><item>When we study memory management, we will see that, with varying size partitions, questions like compaction and “holes” arise. </item></list></item></list></item>
+<item>Time sharing <list id="id23870193" list-type="bulleted"><item>This is multiprogramming with rapid switching between jobs (processes). Deciding when to switch and which process to switch to is called scheduling.</item><item>We will study scheduling when we do processor management</item></list></item></list></item>
+      <item>Personal Computers <list id="id24802396" list-type="bulleted"><item>Serious PC Operating systems such as linux, Windows NT/2000/XP and (the newest) MacOS are multiprogrammed OSes. </item><item>GUIs have become important. Debate as to whether it should be part of the kernel. </item><item>Early PC operating systems were uniprogrammed and their direct descendants in some sense still are (e.g. Windows ME). </item></list></item></list>
+      
+    </section>
+    <section id="id-53821731532">
+      <title>Operating systems are an unsolved problem.</title>
+      <para id="id25963483">Most of OS do not work very well, it crash too often, too slow, awkward to use, etc. Usually they do not do everything they were designed to do. They do not adapt to changes very well, e.g new devices, processors, applications. There are no perfect models to emulate.</para>
+    </section>
+  </content>
+</document>

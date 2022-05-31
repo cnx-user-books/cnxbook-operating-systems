@@ -1,0 +1,73 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Sample Exams</title>
+  <metadata>
+  <md:content-id>m28012</md:content-id><md:title>Sample Exams</md:title>
+  <md:abstract/>
+  <md:uuid>9641a18e-2bb8-43bd-bd87-17a006673615</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-606534599704">
+      <title>1. [20 points, 1 each] True or False, circle T or F.</title>
+      <para id="id16667134">a. A binary semaphore takes on numerical values 0 and 1 only.</para>
+      <para id="id16474549">b. An atomic operation is a machine instruction or a sequence of instructions</para>
+      <para id="id16318803">that must be executed to completion without interruption.</para>
+      <para id="id16531697">c. Deadlock is a situation in which two or more processes (or threads) are waiting for an event that will occur in the future</para>
+      <para id="id16595916">d. Starvation is a situation in which a process is denied access to a resource</para>
+      <para id="id16822669">because of the competitive activity of other, possibly unrelated, processes. </para>
+      <para id="id15396648">e. While a process is blocked on a semaphore's queue, it is engaged in busy waiting.</para>
+      <para id="id16332093">f. Circular waiting is a necessary condition for deadlock, but not a sufficient</para>
+      <para id="id14382327">condition a condition for the deadlock to occur.</para>
+      <para id="id17165723">g. Mutual exclusion can be enforced with a general semaphore whose initial value is greater than 1</para>
+      <para id="id5351918">h. External fragmentation can occur in a paged virtual memory system. </para>
+      <para id="id16753052">i. External fragmentation can be prevented (almost completely) by frequent use of compaction, but the cost would be too high for most systems.</para>
+      <para id="id16961304">j. A page frame is a portion of main memory.</para>
+      <para id="id3958498">k. Once a virtual memory page is locked into main memory, it cannot be written to the disk.</para>
+      <para id="id17204741">l. Pages that are shared between two or more processes can never be swapped out to the disk.</para>
+      <para id="id17206853">m. The allocated portions of memory using a buddy system are all the same size.</para>
+      <para id="id4305532">n. Demand paging requires the programmer to take specific action to force the</para>
+      <para id="id10567816">operating system to load a particular virtual memory page.</para>
+      <para id="id10961621">o. Prepaging is one possibility for the fetch policy in a virtual memory system.</para>
+      <para id="id4044789">p. The resident set of a process can be changed in response to actions by other processes.</para>
+      <para id="id15912257">q. The working set of a process can be changed in response to actions by other processes.</para>
+      <para id="id4711620">r. The translation lookaside buffer is a software data structure that supports he virtual memory address translation operation. </para>
+      <para id="id17154439">s. In a symmetric multiprocessor, threads can always be run on any processor.</para>
+      <para id="id18180091">t. Thrashing will never be a problem if the system has 1 GB of real memory.</para>
+    </section>
+    <section id="id-193168069785">
+      <title>2. [20 points, 5 each] Short answers and simple diagrams.</title>
+      <para id="id13932432">(a) Define the resident set of a process.</para>
+      <para id="id7386216">(b) Define the working set of a process.</para>
+      <para id="id4345488">(c) What problems could occur if virtual memory pages are always allocated in groups of four?</para>
+      <para id="id10535744">(d) What information is used by the Least Recently Used page replacement policy, and how does this compare to the information used by the various Clock algorithms?</para>
+    </section>
+    <section id="id-574735110605">
+      <title>3. [20 points, 5 each] Short answers and simple diagrams.</title>
+      <para id="id17398909">(a) In terms of memory allocation, what is a reference counter? Why is it needed?</para>
+      <para id="id11593927">(b) Explain why, or why not, internal fragmentation can be a problem when using the best fit algorithm for memory allocation.</para>
+      <para id="id11594116">(c) One of the options in a mainframe OS is to limit the number of jobs (processes) currently in the system. What are some of the benefits of this capability?</para>
+      <para id="id16608865">(d) In what circumstances of virtual memory is the placement policy an important issue?</para>
+    </section>
+    <section id="id-432635605455">
+      <title>4. [20 points, 5 each] Short answers.</title>
+      <para id="id16155532">(a) What are four general characteristics of processor scheduling policies?</para>
+      <para id="id18180122">(b) Define Turnaround Time and Normalized Turnaround Time. Why are these useful for measuring the performance of a scheduling algorithm?</para>
+      <para id="id16357701">(c) What would be the effect of a large number of page faults by a process on that process's page allocation on a nonpreemptive operating system?</para>
+      <para id="id10966713">(d) What are four actions or decisions that a preemptive virtual memory operating system would make at the end of a time quantum (in response to a timer interrupt)?</para>
+    </section>
+    <section id="id-394225299741">
+      <title>5. [20 points]</title>
+      <para id="id15768679">This function is proposed for use in an operating system, with the definitions of</para>
+      <para id="id15977285">Process, Process_Set and other functions given elsewhere.</para>
+      <para id="id5375197">Process next_process(Process_Set available_processes) {</para>
+      <para id="id3688176">Process_Set A = highest_valuation(available_processes); /* priority ranking */</para>
+      <para id="id16915591">Process_Set B = earliest(A); /* actual arrival time */</para>
+      <para id="id16788788">Process c = random_selection(B); /* tie-breaker */</para>
+      <para id="id17235068">return c; /* run this process next */</para>
+      <para id="id16160495">}</para>
+      <para id="id15725521">(a) [5] Explain why this function could lead to processor starvation among the available processes.</para>
+      <para id="id16638553">(b) [5] Suppose one of the criteria used by the highest_valuation function is the process's fraction of virtual memory pages currently in main memory. Explain why this is not a good idea.</para>
+      <para id="id16422129">(c) [10] Define a version of the highest_valuation function (in the same style, but with some more descriptive comments) for the Shortest Process Next scheduling policy. Describe the data requirements and how this data is obtained.</para>
+    </section>
+  </content>
+</document>

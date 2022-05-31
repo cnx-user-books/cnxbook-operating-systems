@@ -1,0 +1,100 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Calendar</title>
+  <metadata>
+  <md:content-id>m27312</md:content-id><md:title>Calendar</md:title>
+  <md:abstract/>
+  <md:uuid>1e0ad46f-50cd-442f-ae81-03701da8d07c</md:uuid>
+</metadata>
+
+<content>
+    <table id="id13859606" summary="">
+      <tgroup cols="3">
+        <colspec colnum="1" colname="c1"/>
+        <colspec colnum="2" colname="c2"/>
+        <colspec colnum="3" colname="c3"/>
+        <tbody>
+          <row>
+            <entry>Week1</entry>
+            <entry>Introduction</entry>
+            <entry>Review C++</entry>
+          </row>
+          <row>
+            <entry>Week 2</entry>
+            <entry>OS and ArchitectureOperating System Structure</entry>
+            <entry>Project 1 hand outHomework 1 hand out</entry>
+          </row>
+          <row>
+            <entry>Week 3</entry>
+            <entry>Processes</entry>
+            <entry>Hw1 due, hw2 hand out</entry>
+          </row>
+          <row>
+            <entry>Week 4</entry>
+            <entry>Processes and Threads</entry>
+            <entry/>
+          </row>
+          <row>
+            <entry>Week 5</entry>
+            <entry>Threads and CPU scheduling</entry>
+            <entry>Hw2 due</entry>
+          </row>
+          <row>
+            <entry>Week 6</entry>
+            <entry>CPU Scheduling and Synchronization</entry>
+            <entry>Hw 3 hand out</entry>
+          </row>
+          <row>
+            <entry>Week 7</entry>
+            <entry>Exam 1</entry>
+            <entry>Hw3 due</entry>
+          </row>
+          <row>
+            <entry>Week 8</entry>
+            <entry>Synchronization: Semaphores</entry>
+            <entry>Hw3 due Project 1 due, project2 hand out</entry>
+          </row>
+          <row>
+            <entry>Week 9</entry>
+            <entry>Synchronization: continue</entry>
+            <entry>Hw4 hand out</entry>
+          </row>
+          <row>
+            <entry>Week 10</entry>
+            <entry>Deadlocks and Deadlock Avoidance</entry>
+            <entry/>
+          </row>
+          <row>
+            <entry>Week 11</entry>
+            <entry>Memory Management: Contiguous AllocationPaging and Segmented Paging</entry>
+            <entry>Hw4 due</entry>
+          </row>
+          <row>
+            <entry>Week 12</entry>
+            <entry>Page Replacement and approximations</entry>
+            <entry>Hw5 handout</entry>
+          </row>
+          <row>
+            <entry>Week 13</entry>
+            <entry>File System Interface File System Implementation</entry>
+            <entry>Hw5 due</entry>
+          </row>
+          <row>
+            <entry>Week 14</entry>
+            <entry>I/O Systems </entry>
+            <entry>Project 2 due</entry>
+          </row>
+          <row>
+            <entry>Week 15</entry>
+            <entry>Protection and Security</entry>
+            <entry/>
+          </row>
+          <row>
+            <entry>Week 16</entry>
+            <entry>Exam 2</entry>
+            <entry/>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </content>
+</document>

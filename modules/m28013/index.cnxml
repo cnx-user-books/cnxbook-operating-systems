@@ -1,0 +1,68 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Syllabus</title>
+  <metadata>
+  <md:content-id>m28013</md:content-id><md:title>Syllabus</md:title>
+  <md:abstract/>
+  <md:uuid>9fbdd362-945f-459d-b2c3-2fbe7cb44b50</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-458023523819">
+      <title>Course Materials </title>
+      <section id="id-75637322689">
+        <title>Course Web page: http://www.vocw.edu.vn/content/m10103/latest/</title>
+        <para id="id14844033">
+          <!--Empty sections are illegal in CNXML 0.5.  This empty paragraph is a place holder that added as a byproduct of the word importer.-->
+        </para>
+      </section>
+      <section id="id-948805811416">
+        <title>Text: 'Operating Systems Concepts, 7th edition' by Silberschatz, Galvin and Gagne (ISBN 0471694665)</title>
+        <para id="id14045644">
+          <!--Empty sections are illegal in CNXML 0.5.  This empty paragraph is a place holder that added as a byproduct of the word importer.-->
+        </para>
+      </section>
+    </section>
+    <section id="id-524000491618">
+      <title>Description</title>
+      <para id="id14709079">This course will provide an introduction to operating system design and implementation. The operating system provides a well-known, convenient, and efficient interface between user programs and the bare hardware of the computer on which they run. The operating system is responsible for allowing resources (e.g., disks, networks, and processors) to be shared, providing common services needed by many different programs (e.g., file service, the ability to start or stop processes, and access to the printer), and protecting individual programs from one another. </para>
+      <para id="id15061976">The course will start with a brief historical perspective of the evolution of operating systems over the last fifty years, and then cover the major components of most operating systems. This discussion will cover the tradeoffs that can be made between performance and functionality during the design and implementation of an operating system. Particular emphasis will be given to three major OS subsystems: process management (processes, threads, CPU scheduling, synchronization, and deadlock), memory management (segmentation, paging, swapping), file systems, and operating system support for distributed systems. </para>
+    </section>
+    <section id="id-0119834981279">
+      <title>Prerequisites </title>
+      <para id="id16273352">Programming with Data Structures</para>
+      <para id="id16871110">Architecture &amp; Assembly Language, or equivalent, [In plain english: you need to have an understanding of computer architecture and have C++ programming skills]</para>
+    </section>
+    <section id="id-625056632272">
+      <title>Requirements and Grading</title>
+      <section id="id-308582229451">
+        <title>5 Homeworks (10%) </title>
+        <para id="id16979782">
+          <!--Empty sections are illegal in CNXML 0.5.  This empty paragraph is a place holder that added as a byproduct of the word importer.-->
+        </para>
+      </section>
+      <section id="id-229268885375">
+        <title>2 Programming Projects in C++ (30%) </title>
+        <para id="id17006911">
+          <!--Empty sections are illegal in CNXML 0.5.  This empty paragraph is a place holder that added as a byproduct of the word importer.-->
+        </para>
+      </section>
+      <section id="id-241509683713">
+        <title>2 Exams (60%) </title>
+        <list id="id16607860" list-type="bulleted">
+          <item>Exam 1: first 1/2 of course </item>
+          <item>Exam 2: second 1/2 of course </item>
+          <item>Each exam worth 30% </item>
+        </list>
+        <para id="id16343084">You are expected to attend class regularly, read the assigned reading before class, and participate in class discussions. </para>
+      </section>
+    </section>
+    <section id="id-342179359002">
+      <title>Late Policies </title>
+      <para id="id16423482">This course covers a lot of material and late assignments will seriously impact your ability to learn the next section of the course. Late programming assignments will be penalized 10\% per day, up to 4 days. Late homeworks will not be accepted (no exceptions). Please try to finish your assignments and homeworks on time. </para>
+    </section>
+    <section id="id-0790940369115">
+      <title>Cooperation and Cheating</title>
+      <para id="id16060886">Feel free to discuss homework and labs with other members of the class, myself, or the TA. However, do not look at or copy another students solution to a homework or lab. I am not concerned with how you come to understand the problem and how to solve it, but once you have the background necessary to solve it, you must provide your own solution. Exchanging homework or lab solutions is cheating and will be reported to the University, and you will lose credit for the course. Cheating will not be tolerated. A student found cheating on an exam will receive an automatic grade of F on the exam, and likely will fail the course as well. </para>
+    </section>
+  </content>
+</document>

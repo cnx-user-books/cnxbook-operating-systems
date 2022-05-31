@@ -1,0 +1,425 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Protection and Security</title>
+  <metadata>
+  <md:content-id>m27477</md:content-id><md:title>Protection and Security</md:title>
+  <md:abstract>Protection and Security</md:abstract>
+  <md:uuid>7befc540-d50f-4c46-88c3-e84670b51b74</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-395523664188">
+      <title>Protection and Security</title>
+      <para id="id4023439">The purpose of a protection system is to prevent 
+accidental or intentional misuse of a system. </para>
+      <list id="id4023445" list-type="bulleted">
+        <item>Accidents: Problems of this kind are easy to anticipate (It’s 
+possible to take action to minimize the likelihood of an accident). </item>
+        <item>Malicious abuse: Problems of this kind are very hard to completely 
+eliminate (In order to protect completely against malicious abuse, one must 
+anticipate and eliminate every loophole and resist any temptation to play on 
+probabilities). </item>
+      </list>
+      <para id="id4023463">There are three aspects to a protection mechanism: 
+</para>
+      <list id="id4023468" list-type="bulleted">
+        <item><emphasis>User identification (authentication):</emphasis> make 
+sure we know who is doing what. </item>
+        <item><emphasis>Authorization determination:</emphasis> must figure out 
+what the user is and is not allowed to do. Need a simple database for this. 
+</item>
+        <item><emphasis>Access enforcement:</emphasis> must make sure there are 
+no loopholes in the system. </item>
+      </list>
+      <para id="id4023512">Even the slightest flaw in any of these areas may 
+ruin the whole protection mechanism. </para>
+      <section id="id-301980437967">
+        <title>Authentication</title>
+        <para id="id4023524">User identification is most often done with 
+passwords. This is a relatively weak form of protection. </para>
+        <list id="id4023542" list-type="bulleted">
+          <item>A password is a secret piece of information used to establish 
+the identity of a user. </item>
+          <item>Passwords should not be stored in a readable form. One-way 
+transformations should be used. A 1-way function is an interesting function that 
+is relatively easy to compute, but difficult to invert (essentially the only way 
+to invert it is to compute all the forward transforms looking for one that 
+matches the reverse).</item>
+          <item>Passwords should be relatively long and obscure. </item>
+        </list>
+        <list id="id4023572" list-type="bulleted">
+          <item>Systems like UNIX(R) don't store the password, but the result of 
+a 1-way function on the password. To check a user's password, the system takes 
+the password as input, computes the 1-way function on it, and compares it with 
+the result in the password file. If they match, the password was (with high 
+probability) correct. Note that even knowing the algorithm and the encrypted 
+password, it's still impossible to easily invert the function. </item>
+        </list>
+        <para id="id4023588">Although it's theoretically reasonable to leave a 
+hashed password file in the open, it is rarely done anymore. There are a couple 
+reasons: </para>
+        <list id="id4023595" list-type="bulleted">
+          <item>In practice, bad passwords are not uncommon enough, so rather 
+than having to try all the passwords (or half the passwords on average), trying 
+a large dictionary of common passwords is often enough to break into an account 
+on the system. </item>
+          <item>Password file can be attacked off-line, with the system under 
+attack completely unaware that it is under attack. By forcing the attacker to 
+actually try passwords on the system that they're invading, the system can 
+detect an attack. </item>
+        </list>
+        <para id="id4023616">Another form of identification: badge or key. 
+</para>
+        <list id="id4023622" list-type="bulleted">
+          <item>Does not have to be kept secret. </item>
+          <item>Should not be able to be forged or copied. </item>
+          <item>Can be stolen, but the owner should know if it is. </item>
+        </list>
+        <para id="id4023641">Key paradox: key must be cheap to make, hard to 
+duplicate. This means there must be some trick (i.e. secret) that has to be 
+protected. </para>
+        <para id="id4023648">Once identification is complete, the system must be 
+sure to protect the identity since other parts of the system will rely on it. 
+</para>
+      </section>
+      <section id="id-636084811444">
+        <title>Authorization Determination</title>
+        <para id="id4023662">Must indicate who is allowed to do what with what. 
+Draw the general form as an access matrix with one row per user, one column per 
+file. Each entry indicates the privileges of that user on that object. There are 
+two general ways of storing this information: access lists and capabilities. 
+</para>
+        <para id="id4023692">Access Lists: with each file, indicate which users 
+are allowed to perform which operations. </para>
+        <list id="id4023698" list-type="bulleted">
+          <item>In the most general form, each file has a list of pairs. </item>
+          <item>It would be tedious to have a separate listing for every user, 
+so they are usually grouped into classes. For example, in Unix there are three 
+classes: self, group, anybody else (nine bits per file). </item>
+          <item>Access lists are simple, and are used in almost all file 
+systems. </item>
+        </list>
+        <para id="id4023722">Capabilities: with each user, indicate which files 
+may be accessed, and in what ways. </para>
+        <list id="id4023728" list-type="bulleted">
+          <item>Store a list of pairs with each user. This is called a 
+capability list. </item>
+          <item>Typically, capability systems use a different naming 
+arrangement, where the capabilities are the only names of objects. You cannot 
+even name objects not referred to in your capability list. </item>
+          <item>In access-list systems, the default is usually for everyone to 
+be able to access a file. In capability-based systems, the default is for no-one 
+to be able to access a file unless they have been given a capability. There is 
+no way of even naming an object without a capability. </item>
+          <item>Capabilities are usually used in systems that need to be very 
+secure. However, capabilities can make it difficult to share information: nobody 
+can get access to your stuff unless you explicitly give it to them. </item>
+        </list>
+        <para id="id4023777">
+          <media id="id1170771409426" alt=""><image src="../../media/graphics1-cc1a.png" mime-type="image/png" height="320" width="521"/></media>
+        </para>
+        <para id="id4023812">Are the following things access-based or 
+capability-based protection schemes? </para>
+        <list id="id4023817" list-type="bulleted">
+          <item>Protection Keys </item>
+          <item>Page tables </item>
+        </list>
+      </section>
+      <section id="id-5839057232">
+        <title>Access Enforcement</title>
+        <para id="id4023840">Some part of the system must be responsible for 
+enforcing access controls and protecting the authorization and identification 
+information. </para>
+        <list id="id4023846" list-type="bulleted">
+          <item>Obviously, this portion of the system must run unprotected. Thus 
+it should be as small and simple as possible. Example: the portion of the system 
+that sets up memory mapping tables. </item>
+          <item>The portion of the system that provides and enforces protection 
+is called the security kernel. Most systems, like Unix, do not have a security 
+kernel. As a consequence, the systems are not very secure. </item>
+        </list>
+        <list id="id4023878" list-type="bulleted">
+          <item>What is needed is a hierarchy of levels of protection, with each 
+level getting the minimum privilege necessary to do its job. However, this is 
+likely to be slow (crossing levels takes time). </item>
+        </list>
+      </section>
+      <section id="id-39500615183">
+        <title>File System Security </title>
+        <para id="id4023898">The problem addressed by the security system is how 
+are information and resources protected from people. Issues include the contents 
+of data files which are a privacy issue, and the use of resources, which is an 
+accounting issue. Security must pervade the system, or the system is insecure, 
+but the file system is a particularly good place to discuss security because its 
+protection mechanisms are visible, and the things it protects are very concrete 
+(for a computer system). </para>
+        <para id="id4023913">We're talking about some interesting stuff when we 
+talk about security. For certain people who like puzzles, finding loopholes in 
+security systems and understanding them to the point of breaking them is a 
+challenge. I understand the lure of this. Remember, however, that everyone using 
+these machines is a student like yourself who deserves the same respect that you 
+do. Breaking into another person's files is like breaking into their home, and 
+should not be taken lightly either by those breaking in, or those who catch 
+them. Uninvited intrusions should be dealt with harshly (for example, it's a 
+felony to break into a machine that stores medical records). If you really want 
+to play around with UNIX(R) security, get yourself a linux box and play to your 
+heart's content; don't break into someone's account here and start deleting 
+files. </para>
+      </section>
+      <section id="id-652655581955">
+        <title>Policies and Mechanisms </title>
+        <para id="id4023939">Policies are real world statements about the 
+protection that the system provides. These are all statements of (significantly 
+different) policies: </para>
+        <list id="id4023946" list-type="bulleted">
+          <item>Users should not be able to read each other's mail </item>
+          <item>No student should be able to see answer keys before they are 
+made public </item>
+          <item>All users should have access to all data. </item>
+        </list>
+        <para id="id4023967">The various systems in a computer system that 
+control access to resources are the mechanisms that are used to implement a 
+policy. A good security system is one with clearly stated policy objectives that 
+have been effectively translated into mechanisms. </para>
+        <para id="id4023979">The fact that data security does not stop with 
+computer security cannot be understated. If your computer is perfectly secure, 
+and an employee photocopies printouts of your new chip design, don't blame the 
+computer security system. </para>
+      </section>
+      <section id="id-725551585841">
+        <title>Design Principles </title>
+        <para id="id4023995">Although every security system is different, some 
+overriding principles make sense. Here is a list generated by Saltzer and 
+Schroeder from their experience on MULTICS that remain valid today (these are 
+fun to apply to caper movies - next time you watch Mission Impossible or 
+Sneakers or War Games, try to spot the security flaws that let the intruders 
+work their magic): </para>
+        <list id="id4024006" list-type="bulleted">
+          <item>Public Design Surprisingly public designs tend to be more secure 
+than private ones. The reason is that the security community as a while reviews 
+them and reports flaws that can be fixed. Even if you take pains to keep the 
+source code of your system secret, you should assume that attackers have access 
+to your code. The bad guys will share knowledge, the good guys should, too. 
+</item>
+          <item>Default access is no access. This holds for subsystems just like 
+login screens. It sounds like a platitude, but is a principle worth following at 
+all levels. People who need a certain access will let you know about it quickly. 
+</item>
+          <item>Test for current authority Just because the user had the right 
+to perform an operation a millisecond ago doesn't mean they can do it now. Test 
+the authority every time so that revocation of that authority is meaningful. 
+</item>
+          <item>Give each entity the least privilege required for it to do its 
+job. This may mean creating a bunch of fine-grained privilege levels. The more 
+privilege an entity possesses the more costly a mistake or misuse of that entity 
+is. Printer daemons that run as root can cause logins that run as root. </item>
+          <item>Build in security from the start. Adding security later almost 
+never works. There are too many holes to plug, and as a practical matter 
+security is nearly impossible to add to a fundamentally insecure system. </item>
+          <item>In order to make such a design integration, it must be simple 
+and capable of being applied uniformly. </item>
+          <item>The system must be acceptable to the users. All security systems 
+are a compromise between security and usability. The more features a system has, 
+the more likely opportunities there are for exploitation. Furthermore, if a 
+security feature is too onerous to the users, they will just invent ways to 
+circumvent them. These circumventions are then available for the attackers. An 
+unacceptable security system is automatically attacked from within. </item>
+        </list>
+      </section>
+      <section id="id-713393130935">
+        <title>A Sampling of Protection Mechanisms </title>
+        <para id="id4024088">The idea of protection domains originated with 
+Multics and is a key one for understanding computer security. Imagine a matrix 
+of all protection domains on one axis and all system resources (files) on 
+another. The contents of each cell in the matrix are the operations permitted by 
+a process (or thread) in that domain on that process. </para>
+        <table id="id4024101" summary="">
+          <tgroup cols="5">
+            <colspec colnum="1" colname="c1"/>
+            <colspec colnum="2" colname="c2"/>
+            <colspec colnum="3" colname="c3"/>
+            <colspec colnum="4" colname="c4"/>
+            <colspec colnum="5" colname="c5"/>
+            <tbody>
+              <row>
+                <entry>Domain</entry>
+                <entry>File 1</entry>
+                <entry>File 2</entry>
+                <entry>Domain 1</entry>
+                <entry>Domain 2</entry>
+              </row>
+              <row>
+                <entry namest="c1" nameend="c5"/>
+              </row>
+              <row>
+                <entry>1</entry>
+                <entry>RW</entry>
+                <entry>RWX</entry>
+                <entry>-</entry>
+                <entry>Enter</entry>
+              </row>
+              <row>
+                <entry>2</entry>
+                <entry>R</entry>
+                <entry>-</entry>
+                <entry>-</entry>
+                <entry>-</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <para id="id4010380">Notice that once domains are defined, the ability 
+to change domains becomes another part of the domain system. Processes in given 
+domains are allowed to enter other domains. A process's initial domain is a 
+function of the user who starts the process and the process itself. </para>
+        <para id="id4010389">While the pure domain model makes protection easy 
+to understand, it is almost never implemented. Holding the domains as a matrix 
+doesn't scale. </para>
+      </section>
+      <section id="id-631568992159">
+        <title>Some Domains and Rings </title>
+        <para id="id4010403">UNIX divides processes into 2 parts, a user part 
+and a kernel part. When running as a user the process has limited abilities, and 
+to access hardware, it has to tap into the kernel. The kernel can access all OS 
+and hardware, and decides what it will do on a user's behalf based on 
+credentials stored in the PCB. </para>
+        <para id="id4010412">This is a simplification of the MULTICS system of 
+protection rings. Rather than 2 levels, MULTICS had a 64 ring system where each 
+ring was more privileged than the ones surrounding it, and checked similar 
+credentials before using its increased powers. </para>
+      </section>
+    </section>
+    <section id="id-145244253846">
+      <title>Security Improvements, Encryption</title>
+      <section id="id-361375978606">
+        <title>Security Improvements</title>
+        <para id="id4010436">Solutions: nothing works perfectly, but here are 
+some possibilities: </para>
+        <list id="id4010442" list-type="bulleted">
+          <item>Logging: record all important actions and uses of privilege in 
+an indelible file. Can be used to catch imposters during their initial attempts 
+and failures. E.g. record all attempts to specify an incorrect password, all 
+super-user logins. Even better is to get humans involved at key steps (this is 
+one of the solutions for EFT). </item>
+          <item>Principle of minimum privilege ("need-to-know" principle): each 
+piece of the system has access to the minimum amount of information, for the 
+minimum possible amount of time. E.g. file system cannot touch memory map, 
+memory manager cannot touch disk allocation tables. This reduces the chances of 
+accidental or intentional damage. Note that capabilities are an implementation 
+of this idea. It is very hard to provide fool-proof information containment: 
+e.g. a trojan horse could write characters to a tty, or take page faults, in 
+Morse code, as a signal to another process. </item>
+          <item>Correctness proofs. These are very hard to do. Even so, this 
+only proves that the system works according to spec. It does not mean that the 
+spec. is necessarily right, and it does not deal with Trojan Horses. </item>
+        </list>
+      </section>
+      <section id="id-0516905789566">
+        <title>Encryption</title>
+        <para id="id4010488">Key technology: encryption. Store and transmit 
+information in an encoded form that does not make any sense. </para>
+        <para id="id4010494">The basic mechanism: </para>
+        <list id="id4010498" list-type="bulleted">
+          <item>Start with text to be protected. Initial readable text is called 
+clear text. </item>
+          <item>Encrypt the clear text so that it does not make any sense at 
+all. The nonsense text is called cipher text. The encryption is controlled by a 
+secret password or number; this is called the encryption key. </item>
+        </list>
+        <para id="id4010548">
+          <media id="id1170771438440" alt=""><image src="../../media/graphics2-9191.png" mime-type="image/png" height="182" width="435"/></media>
+        </para>
+        <list id="id4010582" list-type="bulleted">
+          <item>The encrypted text can be stored in a readable file, or 
+transmitted over unprotected channels. </item>
+          <item>To make sense of the cipher text, it must be decrypted back into 
+clear text. This is done with some other algorithm that uses another secret 
+password or number, called the decryption key. </item>
+        </list>
+        <para id="id4010621">
+          <media id="id1170771438503" alt=""><image src="../../media/graphics3-bf0d.png" mime-type="image/png" height="182" width="439"/></media>
+        </para>
+        <para id="id4010655">All of this only works under three conditions: 
+</para>
+        <list id="id4010660" list-type="bulleted">
+          <item>The encryption function cannot easily be inverted (cannot get 
+back to clear text unless you know the decryption key). </item>
+          <item>The encryption and decryption must be done in some safe place so 
+the clear text cannot be stolen. </item>
+          <item>The keys must be protected. In most systems, can compute one key 
+from the other (sometimes the encryption and decryption keys are identical), so 
+cannot afford to let either key leak out. </item>
+        </list>
+        <para id="id4010686">Public key encryption: new mechanism for encryption 
+where knowing the encryption key does not help you to find decryption key, or 
+vice versa. </para>
+        <list id="id4010693" list-type="bulleted">
+          <item>User provides a single password, system uses it to generate two 
+keys (use a one-way function, so cannot derive password from either key). 
+</item>
+          <item>In these systems, keys are inverses of each other: each one could just as easily encrypt with decryption key and then use encryption key to 
+recover clear text. </item>
+          <item>Each user keeps one key secret, publicizes the other. Cannot 
+derive private key from public. Public keys are made available to everyone, in a 
+phone book for example. </item>
+        </list>
+        <para id="id4010720">Safe mail: </para>
+        <list id="id4010724" list-type="bulleted">
+          <item>Use public key of destination user to encrypt mail.</item>
+          <item>Anybody can encrypt mail for this user and be certain that only 
+the user will be able to decipher it.</item>
+        </list>
+        <para id="id4010741">It is a nice scheme because the user only has to 
+remember one key, and all senders can use the same key. However, how does 
+receiver know for sure who it is getting mail from? </para>
+      </section>
+      <section id="id-747236753455">
+        <title>Digital Signatures</title>
+        <para id="id4010756">Positive identification: can also use public keys 
+to certify identity: </para>
+        <list id="id4010762" list-type="bulleted">
+          <item>To certify your identity, use your private key to encrypt a text 
+message, e.g. "I agree to pay Mary Wallace $100 per year for the duration of 
+life." </item>
+          <item>You can give the encrypted message to anybody, and they can 
+certify that it came from you by seeing if it decrypts with your public key. 
+Anything that decrypts into readable text with your public key must have come 
+from you! This can be made legally binding as a form of electronic signature. 
+</item>
+        </list>
+        <para id="id4010795">This is really even better than signatures: harder 
+to forge, and can change if compromised. Note that this idea was developed by an 
+undergraduate (Loren Kohnfelder) in 1978 as part of his undergraduate thesis (at 
+MIT). </para>
+        <para id="id4010802">These two forms of encryption can be combined 
+together. To identify sender in secure mail, encrypt first with your private 
+key, then with receiver's public key. The encryption/decryption functions to 
+send from B to A are: </para>
+        <para id="id4010810">
+          <media id="id1170771439528" alt=""><image src="../../media/graphics4-2930.png" mime-type="image/png" height="79" width="449"/></media>
+        </para>
+        <para id="id4010845">
+          <media id="id1170771439562" alt=""><image src="../../media/graphics5-0b23.png" mime-type="image/png" height="396" width="544"/></media>
+        </para>
+        <para id="id4010879">Encryption appears to be a great way to thwart 
+listeners. It does not help with Trojan Horses, though. </para>
+        <para id="id4010885">Old federal Data Encryption Standard (DES). Is not 
+public-key based, but has been implemented efficiently and appears to be 
+relatively safe.</para>
+        <para id="id4010903">New Advanced Encryption Standard (AES), called 
+Ryndal.</para>
+        <para id="id4010915">General problem: how do we know that an encryption 
+mechanism is safe? It is extremely hard to prove. This is a hot topic for 
+research: theorists are trying to find provably hard problems, and use them for 
+proving safety of encryption. </para>
+        <para id="id4010923">Summary of Protection: very hard, but is 
+increasingly important as things like electronic funds transfer become more and 
+more prevalent. </para>
+      </section>
+      <section id="id-747236753456">
+        <title>Acknowledgment</title>
+        <para id="id4010757">We would like to thank Prof. Barton Miller for 
+sharing as well as for his valued advice</para>
+      </section>
+    </section>
+  </content>
+</document>

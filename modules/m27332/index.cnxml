@@ -1,0 +1,453 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Process</title>
+  <metadata>
+  <md:content-id>m27332</md:content-id><md:title>Process</md:title>
+  <md:abstract>Process in Operating Systems</md:abstract>
+  <md:uuid>bcb8aaaf-5efe-4158-a878-b74cff7c15dd</md:uuid>
+</metadata>
+
+<content>
+    <para id="id3886166">A <emphasis>process</emphasis> is an instance of a computer program that is being executed. While a program itself is just a passive collection of instructions, a process is the actual execution of those instructions. Several processes may be associated with the same program - each would execute independently (multithreading - where each thread represents a process), either synchronously (sequentially) or asynchronously (in parallel). Modern computer systems allow multiple programs and processes to be loaded into memory at the same time and, through time-sharing (or multitasking), give an appearance that they are being executed at the same time (concurrently) even if there is just one processor. Similarly, using a multithreading OS and/or computer architecture, parallel processes of the same program may actually execute simultaneously (on different CPUs) on a multiple CPU machine or network.<footnote id="id6603330">http://en.wikipedia.org/wiki/Process_%28computing%29</footnote></para>
+    <para id="id3886249">Is a process the same as a program? No, it is both more and less. (what is a program? the statements that a user writes, or a command he invokes) </para>
+    <list id="id3886263" list-type="bulleted">
+      <item>More - a program is only part of the state; several processes may be derived from the same program. If I type "ls", something different happens than if you type it. </item>
+      <item>Less - one program may use several processes, e.g. cc runs other things behind your back. </item>
+    </list>
+    <para id="id3886281">Some systems allow only one process. They are called uniprogramming systems (not uniprocessing; that means only one processor). Easier to write some parts of OS, but many other things are hard to do. E.g. compile a program in background while you edit another file; answer your phone and take messages while you are busy hacking. </para>
+    <section id="id-616967940342">
+      <title>Overview</title>
+      <para id="id3886314">In general, a computer system process consists of the following resources:</para>
+      <list id="id3886319" list-type="bulleted">
+        <item>An image of the executable machine code associated with a program.</item>
+        <item>Memory (typically some region of virtual memory); which includes the executable code, process-specific data (input and output), a call stack (to keep track of active subroutines and/or other events), and a heap to hold intermediate computation data generated during run time.</item>
+        <item>Operating system descriptors of resources that are allocated to the process, such as file descriptors (Unix terminology) or handles (Windows), and data sources and sinks.</item>
+        <item>Security attributes, such as the process owner and the process' set of permissions (allowable operations).</item>
+        <item>Processor state (context), such as the content of registers, physical memory addressing, etc. The state is typically stored in computer registers when the process is executing, and in memory otherwise. </item>
+      </list>
+      <para id="id3886386">The operating system holds most of this information about active processes in data structures called process control blocks (PCB, part 3).</para>
+      <para id="id3886396">Any subset of resources, but typically at least the processor state, may be associated with each of the process' threads in operating systems that support threads or 'daughter' processes.</para>
+      <para id="id3886403">The operating system keeps its processes separated and allocates the resources they need so that they are less likely to interfere with each other and cause system failures (e.g., deadlock or thrashing). The operating system may also provide mechanisms for inter-process communication to enable processes to interact in safe and predictable ways.</para>
+    </section>
+    <section id="id-630384520378">
+      <title>Image of an executing program</title>
+      <section id="id-411565643829">
+        <title>An executing program</title>
+        <figure id="id3886432">
+          <media id="id9897176" alt=""><image src="../../media/graphics1-076e.png" mime-type="image/png" height="282" width="640"/></media>
+        </figure>
+        <para id="id3886455">For example: we have a program as the following</para>
+        
+        <code id="id5755200" display="block">public class foo {
+
+    static private int yv = 0;
+    static private int nv = 0;
+
+    public static void main() {
+	foo foo_obj = new foo;
+	foo_obj-&gt;cheat();
+    }
+
+    public cheat() {
+	int tyv = yv;
+	yv = yv + 1;
+	if (tyv &lt; 10) {
+	    cheat();
+	}
+    }
+}
+</code><para id="id3843560">The questions are: </para>
+        <para id="id3843564">How to map a program like this to a Von Neuman machine?</para>
+        <para id="id3843569">Where to keep yv, nv?</para>
+        <para id="id3843594">What about foo_obj and tyv?</para>
+        <para id="id3843618">How to do foo-&gt;cheat()?</para>
+        <para id="id3843635">For the variable like yv, nv, we can easily give them some space on the memory. However, why can’t we do the same for the local variable as tyv? Because while program is executing, we don’t know it will invoke the procedure cheat() how many times, it means we don’t know how much space we need to allocate for this variable. In this case, we will use stack, every time a new cheat() is called, the current tyv will be put in the stack, then we can pop it later when the program returns to this procedure. To find data allocated dynamically on stack, a stack pointer which always point at current activation record is used. We will discuss about activation record on section 2.2.</para>
+        <figure id="id3843722">
+          <media id="id11633353" alt=""><image src="../../media/graphics2-a6be.png" mime-type="image/png" height="247" width="638"/></media>
+        </figure>
+        <para id="id3843746">What about new objects? Of course, a memory location will be allocated for foo_obj. Is the stack an appropriate place to keep this object? Since this kind of object has many reusable code (all methods of class), we will waste a lot of our limited memory when we still use the stack for the new object. Heap is used in this case. Suppose we execute as the following:</para>
+        <figure id="id3843781">
+          <media id="id7613089" alt=""><image src="../../media/graphics3-7fe6.png" mime-type="image/png" height="382" width="604"/></media>
+        </figure>
+      </section>
+      <section id="id-545564767364">
+        <title>Activation record</title>
+        <para id="id3843817">Whenever you call a procedure there is certain information the program associates with that procedure call. The return address is a good example of some information the program maintains for a specific procedure call. Parameters and automatic local variables (i.e., those you declare in the VAR section) are additional examples of information the program maintains for each procedure call. Activation record is the term we'll use to describe the information the program associates with a specific call to a procedure. </para>
+        <para id="id3843844">Activation record is an appropriate name for this data structure. The program creates an activation record when calling (activating) a procedure and the data in the structure is organized in a manner identical to records. Perhaps the only thing unusual about an activation record (when comparing it to a standard record) is that the base address of the record is in the middle of the data structure, so you must access fields of the record at positive and negative offsets. </para>
+        <para id="id3843862">Construction of an activation record begins in the code that calls a procedure. The caller pushes the parameter data (if any) onto the stack. Then the execution of the CALL instruction pushes the return address onto the stack. At this point, construction of the activation record continues within in the procedure itself. The procedure pushes registers and other important state information and then makes room in the activation record for local variables. The procedure must also update the EBP register so that it points at the base address of the activation record. </para>
+        <para id="id3843883">To see what a typical activation record looks like, consider the following HLA procedure declaration: </para>
+        <code id="id11182056" display="block">procedure ARDemo( i:uns32; j:int32; k:dword ); nodisplay;
+var
+	a:int32;
+	r:real32;
+	c:char;
+	b:boolean;
+	w:word;
+begin ARDemo;
+	.
+	.
+	.
+end ARDemo;</code>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <para id="id3844007">Whenever an HLA program calls this ARDemo procedure, it begins by pushing the data for the parameters onto the stack. The calling code will push the parameters onto the stack in the order they appear in the parameter list, from left to right. Therefore, the calling code first pushes the value for the i parameter, then it pushes the value for the j parameter, and it finally pushes the data for the k parameter. After pushing the parameters, the program calls the ARDemo procedure. Immediately upon entry into the ARDemo procedure, the stack contains these four items arranged as shown in Figure 3.1 </para>
+        
+        <para id="id3844039">
+          <figure id="id3844046">
+            <media id="id6723812" alt=""><image src="../../media/graphics4-448f.png" mime-type="image/png" height="303" width="286"/></media>
+          </figure>
+        </para>
+        <para id="id3844070">Figure 3.1 Stack Organization Immediately Upon Entry into ARDemo </para>
+        
+        <para id="id3844092">The first few instructions in ARDemo (note that it does not have the @NOFRAME option) will push the current value of EBP onto the stack and then copy the value of ESP into EBP. Next, the code drops the stack pointer down in memory to make room for the local variables. This produces the stack organization shown in Figure 3.2 </para>
+        <para id="id3844106">
+          <figure id="id3844113">
+            <media id="id7350368" alt=""><image src="../../media/graphics5-534f.png" mime-type="image/png" height="324" width="307"/></media>
+          </figure>
+        </para>
+        <para id="id3844155">Figure 3.2 Activation Record for ARDemo </para>
+        
+        <para id="id3844175">To access objects in the activation record you must use offsets from the EBP register to the desired object. The two items of immediate interest to you are the parameters and the local variables. You can access the parameters at positive offsets from the EBP register, you can access the local variables at negative offsets from the EBP register as Figure 3.3 shows: </para>
+        
+        <para id="id3844198">
+          <figure id="id3844205">
+            <media id="id11124825" alt=""><image src="../../media/graphics6-24c5.png" mime-type="image/png" height="324" width="320"/></media>
+          </figure>
+        </para>
+        <para id="id3844251">Figure 3.3 Offsets of Objects in the ARDemo Activation Record</para>
+        <para id="id3844262">Intel specifically reserves the EBP (extended base pointer) for use as a pointer to the base of the activation record. This is why you should never use the EBP register for general calculations. If you arbitrarily change the value in the EBP register you will lose access to the current procedure's parameters and local variables. </para>
+        
+      </section>
+    </section>
+    <section id="id-627401627514">
+      <title>Threads</title>
+      <para id="id3844297">In modern operating systems, each process can have several threads. Multiple threads share the same program code, operating system resources (such as memory and file access) and operating system permissions (for file access as the process they belong to). A process that has only one thread is referred to as a single-threaded process, while a process with multiple threads is referred to as a multi-threaded process. Multi-threaded processes have the advantage that they can perform several tasks concurrently without the extra overhead needed to create a new process and handle synchronized communication between these processes. For example a word processor could perform a spell check as the user types, without freezing the application - one thread could handle user input, while another runs the spell checking utility</para>
+    </section>
+    <section id="id-217163004591">
+      <title>Process Control Block (PCB)</title>
+      <para id="id3844352">A Process Control Block (PCB) is a data structure in the operating system kernel containing the information needed to manage a particular process. The PCB is "the manifestation of a process in an operating system".</para>
+      <para id="id3844371"/>
+      <section id="id-457922623785">
+        <title>Included information</title>
+        <para id="id3844389">Implementations differ, but in general a PCB will include, directly or indirectly:</para>
+        <list id="id3844394" list-type="bulleted">
+          <item>The identifier of the process (a process identifier, or PID)</item>
+          <item>Register values for the process including, notably, </item>
+        </list>
+        <para id="id3844410">the Program Counter value for the process</para>
+        <list id="id3844414" list-type="bulleted">
+          <item>The address space for the process</item>
+          <item>Priority</item>
+          <item>A list of open files &amp; sockets</item>
+          <item>Process accounting information, such as when the process was last run, how much CPU time it has accumulated, etc.</item>
+          <item>Pointer to the next PCB i.e. pointer to the PCB of the next process to run</item>
+        </list>
+        <para id="id3844451">During a context switch, the running process is stopped and another process is given a chance to run. The kernel must stop the execution of the running process, copy out the values in hardware registers to its PCB, and update the hardware registers with the values from the PCB of the new process.</para>
+      </section>
+      <section id="id-366314661188">
+        <title>Location of the PCB</title>
+        <para id="id3844476">Since the PCB contains the critical information for the process, it must be kept in an area of memory protected from normal user access. In some operating systems the PCB is placed in the beginning of the kernel stack of the process since that is a convenient protected location.</para>
+      </section>
+    </section>
+    <section id="id-549046196513">
+      <title>Process states</title>
+      <para id="id3844494">Processes go through various process states which determine how the process is handled by the operating system kernel. The specific implementations of these states vary in different operating systems, and the names of these states are not standard, but the general high-level functionality is the same.</para>
+      <para id="id3844503">When a process is created, it needs to wait for the process scheduler to set its status to "waiting" and load it into main memory from secondary storage device (such as a hard disk or a CD-ROM). Once the process has been assigned to a processor by a short-term scheduler, a context switch is performed (loading the process into the processor) and the process state is set to "running" - where the processor executes its instructions. If a process needs to wait for a resource (such as waiting for user input, or waiting for a file to become available), it is moved into the "blocked" state until it no longer needs to wait - then it is moved back into the "waiting" state. Once the process finishes execution, or is terminated by the operating system, it is moved to the "terminated" state where it waits to be removed from main memory</para>
+      <figure id="id3844524"><title>Process states       </title>
+
+ <media id="id9241623" alt=""><image src="../../media/graphics7-8d5c.png" mime-type="image/png" height="508" width="508"/></media>
+     <caption>Process states</caption> </figure>
+      
+    </section>
+    <section id="id-409075335176">
+      <title>Context switch</title>
+      <para id="id3844561">A context switch is the computing process of storing and restoring the state of a CPU such that multiple processes can share a single CPU resource. The context switch is an essential feature of a multitasking operating system. Context switches are usually computationally intensive and much of the design of operating systems is to optimize the use of context switches. A context switch can mean a register context switch, a task context switch, a thread context switch, or a process context switch. What constitutes the context is determined by the processor and the operating system.</para>
+      <section id="id-369865763679">
+        <title>How is switching code invoked?</title>
+        <para id="id3844593">Preemptive: user thread executing ® clock interrupt ® PC modified by hardware to “vector” to interrupt handler ® user thread state is saved for restart ® clock interrupt handler is invoked ® disable interrupt checking ® check whether current thread has run “long enough” ® if yes, post asynchronous software trap (AST) ® enable interrupt checking ® exit interrupt handler ® enter “return-to-user” code ® check whether AST was posted ® if not, restore user thread state and return to executing user thread; if AST was posted, call context switch code</para>
+        <para id="id3844726">Non-preemptive: user thread executing ® system call to perform I/O ® user thread state is saved for restart ® OS code to perform system call is invoked ® I/O operation started (by invoking I/O driver) ® set thread status to waiting ® move thread’s TCB from run queue to wait queue associated with specific device ® call context switching code</para>
+      </section>
+      <section id="id-376824647981">
+        <title>Software vs hardware context switching</title>
+        <para id="id3844810">Intel 80386 and higher CPUs contain hardware support for context switches. However, most modern operating systems perform software context switching, which can be used on any CPU, rather than hardware context switching in an attempt to obtain improved performance. Software context switching was first implemented in Linux for Intel-compatible processors with the 2.4 kernel. </para>
+        <para id="id3844841">One major advantage claimed for software context switching is that, whereas the hardware mechanism saves almost all of the CPU state, software can be more selective and save only that portion that actually needs to be saved and reloaded. However, there is some question as to how important this really is in increasing the efficiency of context switching. Its advocates also claim that software context switching allows for the possibility of improving the switching code, thereby further enhancing efficiency, and that it permits better control over the validity of the data that is being loaded. </para>
+      </section>
+      <section id="id-981906685226">
+        <title>The Cost of Context Switching</title>
+        <para id="id3844863">Context switching is generally computationally intensive. That is, it requires considerable processor time, which can be on the order of nanoseconds for each of the tens or hundreds of switches per second. Thus, context switching represents a substantial cost to the system in terms of CPU time and can, in fact, be the most costly operation on an operating system. </para>
+        <para id="id3844885">Consequently, a major focus in the design of operating systems has been to avoid unnecessary context switching to the extent possible. However, this has not been easy to accomplish in practice. In fact, although the cost of context switching has been declining when measured in terms of the absolute amount of CPU time consumed, this appears to be due mainly to increases in CPU clock speeds rather than to improvements in the efficiency of context switching itself. </para>
+        <para id="id3844897">One of the many advantages claimed for Linux as compared with other operating systems, including some other Unix-like systems, is its extremely low cost of context switching and mode switching. </para>
+      </section>
+    </section>
+    <section id="id-705312531578">
+      <title>Entering and Exiting the kernel</title>
+      <section id="id-0602182741257">
+        <title>User and Kernel Address Spaces</title>
+        <para id="id3844920">In a modern operating system, each user process runs in its own address space, and the kernel operates in its protected space. At the processor level (machine code level), the main distinction between the kernel and a user process is the ability to access certain resources such as executing privileged instructions, reading or writing special registers, and accessing certain memory locations. </para>
+        <para id="id3844930">The separation of user process from user process insures that each process will not disturb each other. The separation of user processes from the kernel insures that user processes will not be able to arbitrarily modify the kernel or jump into its code. It is important that processes cannot read the kernel's memory, and that it cannot directly call any function in the kernel. Allowing such operations to occur would invalidate any protection that the kernel wants to provide. </para>
+        <para id="id3844943">Operating systems provide a mechanism for selectively calling certain functions in the kernel. These select functions are called kernel calls or system calls, and act as gateways into the kernel. These gateways are carefully designed to provide safe functionality. They carefully check their parameters and understand how to move data from a user process into the kernel and back again. We will discuss this topic in more detail in the Memory Management section of the course. </para>
+      </section>
+      <section id="id-950219548915">
+        <title>The Path In and Out of the Kernel</title>
+        <para id="id3844983">The only way to enter the operating kernel is to generate a processor interrupt. Note the emphasis on the word "only". These interrupts come from several sources: </para>
+        <list id="id3845002" list-type="bulleted">
+          <item>I/O devices: When a device, such as a disk or network interface, completes its current operation, it notifies the operating system by generating a processor interrupt. </item>
+          <item>Clocks and timers: Processors have timers that can be periodic (interrupting on a fixed interval) or count-down (set to complete at some specific time in the future). Periodic timers are often used to trigger scheduling decisions. For either of these types of timers, an interrupt is generated to get the operating system's attention. </item>
+          <item>Exceptions: When an instruction performs an invalid operation, such as divide-by-zero, invalid memory address, or floating point overflow, the processor can generate an interrupt. </item>
+          <item>Software Interrupts (Traps): Processors provide one or more instructions that will cause the processor to generate an interrupt. These instructions often have a small integer parameter. Trap instructions are most often used to implement system calls and to be inserted into a process by a debugger to stop the process at a breakpoint. </item>
+        </list>
+        <para id="id3845072">The flow of control is as follows (and illustrated below): </para>
+        <list id="id3845077" list-type="enumerated">
+          <item>The general path goes from the executing user process to the interrupt handler. This step is like a forced function call, where the current PC and processor status are saved on a stack. </item>
+          <item>The interrupt handler decides what type of interrupt was generated and calls the appropriate kernel function to handle the interrupt. </item>
+          <item>The general run-time state of the process is saved (as on a context switch). </item>
+          <item>The kernel performs the appropriate operation for the system call. This step is the "real" functionality; all the steps before and after this one are mechanisms to get here from the user call and back again. </item>
+          <item>if the operation that was performed was trivial and fast, then the kernel returns immediately to the interrupted process. Otherwise, sometime later (it might be much later), after the operation is complete, the kernel executes its short-term scheduler (dispatcher) to pick the next process to run. </item>
+        </list>
+        <para id="id3845122">Note that one side effect of an interrupt might be to terminate the currently running process. In this case, of course, the current process will never be chosen to run next! </para>
+        <list id="id3845130" list-type="enumerated">
+          <item>The state for the selected process is loaded into the registers and control is transferred to the process using some type of "return from interrupt" instruction. </item>
+        </list>
+        <figure id="id3845149">
+          <media id="id10824477" alt=""><image src="../../media/graphics8-e878.png" mime-type="image/png" height="520" width="635"/></media>
+        </figure>
+      </section>
+      <section id="id-55663847136">
+        <title>The system call path</title>
+        <para id="id3845181">One of the most important uses of interrupts, and one of the least obvious when you first study about operating systems, is the system call. In your program, you might request a UNIX system to read some data from a file with a call that looks like: </para>
+        <para id="id3845189">rv = read(0,buff,sizeof(buff)); </para>
+        <para id="id3845193">Somewhere, deep down in the operating system kernel, is a function that implements this read operation. For example, in Linux, the routine is called sys_read(). </para>
+        <para id="id3845200">The path from the simple read() function call in your program to the sys_read() routine in the kernel takes you through some interesting and crucial magic. The path goes from your code to a system call stub function that contains a trap or interrupts instruction, to an interrupt handler in the kernel, to the actual kernel function. The return path is similar, with the addition of some important interactions with the process dispatcher.</para>
+        <figure id="id3845229">
+          <media id="id8238709" alt=""><image src="../../media/graphics9-287a.png" mime-type="image/png" height="368" width="618"/></media>
+        </figure>
+      </section>
+      <section id="id-324433714106">
+        <title>System Call Stub Functions</title>
+        <para id="id3845260">The system call stub functions provide a high-level language interface to a function whose main job is to generate the software interrupt (trap) needed to get the kernel's attention. These functions are often called wrappers. </para>
+        <para id="id3845280">The stub functions on most operating systems do the same basic steps. While the details of implementation differ, they include the following: </para>
+        <para id="id3845287">(1)</para>
+        <para id="id3845291">set up the parameters,</para>
+        <para id="id3845295">(2)</para>
+        <para id="id3845300">trap to the kernel,</para>
+        <para id="id3845304">(3)</para>
+        <para id="id3845309">check the return value when the kernel returns, and</para>
+        <para id="id3845314">(4)</para>
+        <para id="id3845318">(a)</para>
+        <para id="id3845322">if no error: return immediately, else</para>
+        <para id="id3845326">(b)</para>
+        <para id="id3845330">if there is an error: set a global error number variable (called "errno") and return a value of -1.</para>
+        <para id="id3845336">Below are annotated examples of this code from both the Linux (x86) and Solaris (SPARC) version of the C library. As an exercise, for the Linux and Solaris versions of the code, divide the code into the parts described above and label each part. </para>
+        <para id="id3845344">x86 Linux read (glibc 2.1.3) </para>
+        <code id="id9352646" display="block">read:       push   %ebx
+            mov    0x10(%esp,1),%edx           ; put the 3 parms in registers
+            mov    0xc(%esp,1),%ecx
+            mov    0x8(%esp,1),%ebx
+            mov    $0x3,%eax                   ; 3 is the syscall # for read
+            int    $0x80                       ; trap to kernel
+            pop    %ebx
+            cmp    $0xfffff001,%eax            ; check return value
+            jae    read_err
+read_ret:   ret                                ; return if OK.
+read_err:   push   %ebx
+            call   read_next                   ; push PC on stack
+read_next:  pop    %ebx                        ; pop PC off stack to %ebx
+            xor    %edx,%edx                   ; clear %edx
+            add    $0x49a9,%ebx                ; the following is a bunch of
+            sub    %eax,%edx                   ; ...messy stuff that sets the
+            push   %edx                        ; ...value fo the errno variable
+            call   0x4000dfc0 &lt;__errno_location&gt;
+            pop    %ecx
+            pop    %ebx
+            mov    %ecx,(%eax)
+            or     $0xffffffff,%eax            ; set return value to -1
+            jmp    read_ret                    ; return
+</code>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        <para id="id3845761">SPARC Solaris 8 </para>
+        <code id="id8356355" display="block">read:       st     %o0,[%sp+0x44]            ! save argument 1 (fd) on stack
+read_retry: mov    3,%g1                     ! 3 is the syscall # for read
+            ta     8                         ! trap to kernel
+            bcc    read_ret                  ! branch if no error
+            cmp    %o0,0x5b                  ! check for interrupt syscall
+            be,a   read_retry                ! ... and restart if so
+            ld     [%sp+0x44],%o0            ! restore 1st param (fd)
+            mov    %o7,%g1                   ! save return address
+            call   read_next                 ! set %o7 to PC
+            sethi  %hi(0x1d800), %o5         ! the following is a bunch of
+read_next:  or     %o5, 0x10, %o5            ! ...messy stuff that sets the
+            add    %o5,%o7,%o5               ! ...value of the errno variable
+            mov    %g1, %o7                  ! ...by calling _cerror.  also the
+            ld     [%o5+0xe28],%o5           ! ...return value is set to -1
+            jmp    %o5
+            nop
+read_ret:   retl
+            nop
+</code>
+      </section>
+      <section id="id-78371689299">
+        <title>Saving State and Invoking the Kernel Function</title>
+        <para id="id3846098">Below is a slightly simplified version of the Linux code that is called to handle a system call trap. </para>
+        <para id="id3846116">The first part of the code (starting at system_call) saves the registers of the user process and plays around with the memory management registers so that the kernel's internal data is accessible. It also finds the process table entry for this user process. </para>
+        <para id="id3846124">The trap instruction that caused the entry to the kernel has a parameter that specifies which system call is being invoked. The code starting at do_call checks to see if this number is in range, and then calls the function associated with this system call number. When this function returns, the return value (stored in the eax register) is saved in the place where all the other user registers are stored. As a result, when control is transferred from the kernel back to the user process, the return value will be in the right place. </para>
+        <para id="id3846138">After the system call is complete, it is time to return to the user process. There are two choices at this point: (1) either return directly the the user process that made the system call or (2) go through the dispatcher to select the next process to run. ret_from_sys_call </para><code id="id11175947" display="block">system_call:
+        #
+        #----Save orig_eax: system call number
+        #    used to distinguish process that entered
+        #    kernel via syscall from one that entered
+        #    via some other interrupt
+        #
+        pushl %eax
+
+        # 
+        #----Save the user's registers
+        # 
+        pushl %es
+        pushl %ds
+        pushl %eax
+        pushl %ebp
+        pushl %edi
+        pushl %esi
+        pushl %edx
+        pushl %ecx
+        pushl %ebx
+
+        # 
+        #----Set up the memory segment registers so that the kernel's
+        #    data segment can be accessed.
+        # 
+        movl $(__KERNEL_DS),%edx
+        movl %edx,%ds
+        movl %edx,%es
+
+        # 
+        #----Load pointer to task structure in EBX. The task structure
+	#    resides below the 8KB per-process kernel stack.
+        # 
+        movl $-8192, %ebx
+        andl %esp, %ebx
+
+        # 
+        #----Check to see if system call number is a valid one, then
+        #    look-up the address of the kernel function that handles this
+        #    system call.
+        # 
+do_call:
+        cmpl $(NR_syscalls),%eax
+        jae badsys
+        call *SYMBOL_NAME(sys_call_table)(,%eax,4)
+
+	# Put return value in EAX of saved user context
+        movl %eax,EAX(%esp)
+
+        # 
+        #----If we can return directly to the user, then do so, else go to
+        #    the dispatcher to select another process to run.
+        # 
+ret_from_sys_call:
+        cli        # Block interrupts; iret effectively re-enables them
+        cmpl $0,need_resched(%ebx)
+        jne reschedule
+
+        # restore user context (including data segments)
+        popl %ebx
+        popl %ecx
+        popl %edx
+        popl %esi
+        popl %edi
+        popl %ebp
+        popl %eax
+        popl %ds
+        popl %es
+        addl $4,%esp                   # ignore orig_eax
+        iret
+
+reschedule:
+        call SYMBOL_NAME(schedule)
+        jmp ret_from_sys_call
+</code>
+        
+      </section>
+    </section>
+    <section id="id-973497861099">
+      <title>Independent and Cooperating processes</title>
+      <section id="id-447420817902">
+        <title>Independent process </title>
+        <para id="id3846974">One that is independent of the rest of the universe. </para>
+        <list id="id3846982" list-type="bulleted">
+          <item>Its state is not shared in any way by any other process. </item>
+          <item>Deterministic: input state alone determines results. </item>
+          <item>Reproducible. </item>
+          <item>Can stop and restart with no bad effects (only time varies). Example: program that sums the integers from 1 to i (input). </item>
+        </list>
+        <para id="id3847011">There are many different ways in which a collection of independent processes might be executed on a processor: </para>
+        <list id="id3847017" list-type="bulleted">
+          <item>Uniprogramming: a single process is run to completion before anything else can be run on the processor. </item>
+          <item>Multiprogramming: share one processor among several processes. If no shared state, then order of dispatching is irrelevant. </item>
+          <item>Multiprocessing: if multiprogramming works, then it should also be ok to run processes in parallel on separate processors. <list id="id3847042" list-type="bulleted"><item>A given process runs on only one processor at a time. </item><item>A process may run on different processors at different times (move state, assume processors are identical). </item><item>Cannot distinguish multiprocessing from multiprogramming on a very fine grain. </item></list></item>
+        </list>
+        <para id="id3847064">How often are processes completely independent of the rest of the universe? </para>
+      </section>
+      <section id="id-507333565174">
+        <title>Cooperating processes </title>
+        <list id="id3847077" list-type="bulleted">
+          <item>Machine must model the social structures of the people that use it. People cooperate, so machine must support that cooperation. Cooperation means shared state, e.g. a single file system. </item>
+          <item>Cooperating processes are those that share state. (May or may not actually be "cooperating") </item>
+          <item>Behavior is nondeterministic: depends on relative execution sequence and cannot be predicted a priori. </item>
+          <item>Behavior is irreproducible. </item>
+          <item>Example: one process writes "ABC", another writes "CBA". Can get different outputs, cannot tell what comes from which. E.g. which process output first "C" in "ABCCBA"? Note the subtle state sharing that occurs here via the terminal. Not just anything can happen, though. For example, "AABBCC" cannot occur. </item>
+        </list>
+        <figure id="id3847153">
+          <media id="id11109527" alt=""><image src="../../media/graphics10-1281.png" mime-type="image/png" height="244" width="513"/></media>
+        </figure>
+        <para id="id3847177">When discussing concurrent processes, multiprogramming is as dangerous as multiprocessing unless you have tight control over the multiprogramming. Also bear in mind that smart I/O devices are as bad as cooperating processes (they share the memory). </para>
+        <para id="id3847185">Why permit processes to cooperate? </para>
+        <list id="id3847189" list-type="bulleted">
+          <item>Want to share resources: <list id="id3847198" list-type="bulleted"><item>One computer, many users. </item><item>One file of checking account records, many tellers. What would happen if there were a separate account for each teller? Could withdraw same money many times. </item></list></item>
+          <item>Want to do things faster: <list id="id3847226" list-type="bulleted"><item>Read next block while processing current one. </item><item>Divide job into sub-jobs, execute in parallel. </item></list></item>
+          <item>Want to construct systems in modular fashion. (e.g. tbl | eqn | troff) </item>
+        </list>
+        <para id="id3847246">Reading: Section 2.3.1 in Tanenbaum talks about similar stuff, but uses terms a little differently. </para>
+        <para id="id3847252">Basic assumption for cooperating process systems is that the order of some operations is irrelevant; certain operations are completely independent of certain other operations. Only a few things matter: </para>
+        <list id="id3847260" list-type="bulleted">
+          <item>Example: A = 1; B = 2; has same result as B = 2; A = 1; </item>
+          <item>Another example: A = B+1; B = 2*B cannot be re-ordered. </item>
+        </list>
+        <figure id="id3847279">
+          <media id="id11168219" alt=""><image src="../../media/graphics11-67be.png" mime-type="image/png" height="197" width="392"/></media>
+        </figure>
+        <para id="id3847307">Race conditions: Suppose A=1 and A=2 are executed in parallel? Do not know what will happen; depends on which one goes fastest. What if they happen at EXACTLY the same time? Cannot tell anything without more information. Could end up with A=3! </para>
+        <para id="id3847327">Atomic operations: Before we can say ANYTHING about parallel processes, we must know that some operation is atomic, i.e. that it either happens in its entirety without interruption, or not at all. Cannot be interrupted in the middle. E.g. suppose that println is atomic -- what happens in println("ABC"); println("BCA") example? </para>
+        <list id="id3847353" list-type="bulleted">
+          <item>References and assignments are atomic in almost all systems. A=B will always get a good value for B, will always set a good value for A (not necessarily true for arrays, records, or even floating-point numbers). </item>
+          <item>In uniprocessor systems, anything between interrupts is atomic. </item>
+          <item>If you do not have an atomic operation, you cannot make one. Fortunately, the hardware folks give us atomic ops. </item>
+        </list>
+        <para id="id3847378">In fact, if there is true concurrency, it is very hard to make a perfect atomic operation; most of the time we settle for things that only work "most" of the time. </para>
+        <list id="id3847386" list-type="bulleted">
+          <item>If you have any atomic operation, you can use it to generate higher-level constructs and make parallel programs work correctly. This is the approach we will take in this course. </item>
+        </list>
+      </section>
+    </section>
+  </content>
+</document>

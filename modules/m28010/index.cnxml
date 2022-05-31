@@ -1,0 +1,469 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Review question: Protection and Security</title>
+  <metadata>
+  <md:content-id>m28010</md:content-id><md:title>Review question: Protection and Security</md:title>
+  <md:abstract>Review question of Protection and Security</md:abstract>
+  <md:uuid>38e81da9-ff05-42f4-8765-b03787bb8c41</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-593303426851">
+      <title>Briefly explain how single, double, and circular buffering can be 
+used to improve the performance of a process. </title>
+      <para id="id4270209">With single buffering, the operating system dedicates 
+a buffer to a process. This allows the process to work on one block while the 
+I/O system reads another block into the buffer. </para>
+      <para id="id4270217">With double buffering, the operating system dedicates 
+two buffers to a process. The process can then empty one buffer while the I/O 
+system fills the other. This allows the process to process data as fast as the 
+I/O system can read it in.</para>
+    </section>
+    <section id="id-118985378343">
+      <title>Why is the average search time to find a record in a file less for 
+an indexed sequential file than for a sequential file? </title>
+      <para id="id4270234">With a sequential file, the records are stored in 
+order of a particular key, but searching requires going through all of the 
+records sequentially until a match is found. In an indexed sequential file, the 
+index contains pointers to every K records in the file. For a file with N 
+records, searching for a record with a particular key requires searching only 
+the N/K entries in the index, and then the K records in that section of the 
+file. Depending on the size of K, this can be considerably less than 
+sequentially searching through all N entries.</para>
+    </section>
+    <section id="id-374162461482">
+      <title>Briefly describe the four categories of information stored in a file 
+directory. Give an example of an item from each category, along with a one 
+sentence description. </title>
+      <list id="id4270257" list-type="bulleted">
+        <item>Basic information is used to identify the file and includes the 
+file name and type.</item>
+        <item>Address information is used to find the file on disk and includes 
+the address and size of the file.</item>
+        <item>Access control information is used to provide sharing and 
+protection and includes the owner and related access information.</item>
+        <item>Usage information is used for accounting and includes such items 
+as the date of creation and last modification.</item>
+      </list>
+      <section id="id-111364539071">
+        <title>Problems</title>
+        <para id="id4270286">
+          <!--Empty sections are illegal in CNXML 0.5.  This empty paragraph is 
+a place holder that added as a byproduct of the word importer.-->
+        </para>
+      </section>
+    </section>
+    <section id="id-626251032807">
+      <title>Perform the same type of analysis as that of Table 11.2 for the 
+following sequence of disk track requests: 27, 129, 110, 186, 147, 41, 10, 64, 
+120. Assume that the disk head is initially positioned over track 100 and is 
+moving in the direction of decreasing track number. Do the same analysis, but 
+now assume that the disk head is moving in the direction of increasing track 
+number. </title>
+      <para id="id4270308">Answer:</para>
+      <table id="id4270312" summary="">
+        <tgroup cols="8">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <colspec colnum="3" colname="c3"/>
+          <colspec colnum="4" colname="c4"/>
+          <colspec colnum="5" colname="c5"/>
+          <colspec colnum="6" colname="c6"/>
+          <colspec colnum="7" colname="c7"/>
+          <colspec colnum="8" colname="c8"/>
+          <tbody>
+            <row>
+              <entry namest="c1" nameend="c2">FIFO</entry>
+              <entry namest="c3" nameend="c4">SSTF</entry>
+              <entry namest="c5" nameend="c6">SCAN</entry>
+              <entry namest="c7" nameend="c8">C-SCAN</entry>
+            </row>
+            <row>
+              <entry>Next track accessed</entry>
+              <entry>Number of tracks traversed</entry>
+              <entry>Next track accessed</entry>
+              <entry>Number of tracks traversed</entry>
+              <entry>Next track accessed</entry>
+              <entry>Number of tracks traversed</entry>
+              <entry>Next track accessed</entry>
+              <entry>Number of tracks traversed</entry>
+            </row>
+            <row>
+              <entry>27</entry>
+              <entry>73</entry>
+              <entry>110</entry>
+              <entry>10</entry>
+              <entry>64</entry>
+              <entry>36</entry>
+              <entry>64</entry>
+              <entry>36</entry>
+            </row>
+            <row>
+              <entry>129</entry>
+              <entry>102</entry>
+              <entry>120</entry>
+              <entry>10</entry>
+              <entry>41</entry>
+              <entry>23</entry>
+              <entry>41</entry>
+              <entry>23</entry>
+            </row>
+            <row>
+              <entry>110</entry>
+              <entry>19</entry>
+              <entry>129</entry>
+              <entry>9</entry>
+              <entry>27</entry>
+              <entry>14</entry>
+              <entry>27</entry>
+              <entry>14</entry>
+            </row>
+            <row>
+              <entry>186</entry>
+              <entry>76</entry>
+              <entry>147</entry>
+              <entry>18</entry>
+              <entry>10</entry>
+              <entry>17</entry>
+              <entry>10</entry>
+              <entry>17</entry>
+            </row>
+            <row>
+              <entry>147</entry>
+              <entry>39</entry>
+              <entry>186</entry>
+              <entry>39</entry>
+              <entry>110</entry>
+              <entry>100</entry>
+              <entry>186</entry>
+              <entry>176</entry>
+            </row>
+            <row>
+              <entry>41</entry>
+              <entry>106</entry>
+              <entry>64</entry>
+              <entry>122</entry>
+              <entry>120</entry>
+              <entry>10</entry>
+              <entry>147</entry>
+              <entry>39</entry>
+            </row>
+            <row>
+              <entry>10</entry>
+              <entry>31</entry>
+              <entry>41</entry>
+              <entry>23</entry>
+              <entry>129</entry>
+              <entry>9</entry>
+              <entry>129</entry>
+              <entry>18</entry>
+            </row>
+            <row>
+              <entry>64</entry>
+              <entry>54</entry>
+              <entry>27</entry>
+              <entry>14</entry>
+              <entry>147</entry>
+              <entry>18</entry>
+              <entry>120</entry>
+              <entry>9</entry>
+            </row>
+            <row>
+              <entry>120</entry>
+              <entry>56</entry>
+              <entry>10</entry>
+              <entry>17</entry>
+              <entry>186</entry>
+              <entry>39</entry>
+              <entry>110</entry>
+              <entry>10</entry>
+            </row>
+            <row>
+              <entry>Average</entry>
+              <entry>61.8</entry>
+              <entry>Average</entry>
+              <entry>29.1</entry>
+              <entry>Average</entry>
+              <entry>29.6</entry>
+              <entry>Average</entry>
+              <entry>38</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    <section id="id-155627813488">
+      <title>If the disk head is initially moving in the direction of increasing 
+track number, the results change for only SCAN and C-SCAN:</title>
+      <table id="id4431281" summary="">
+        <tgroup cols="4">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <colspec colnum="3" colname="c3"/>
+          <colspec colnum="4" colname="c4"/>
+          <tbody>
+            <row>
+              <entry namest="c1" nameend="c2">SCAN</entry>
+              <entry namest="c3" nameend="c4">C-SCAN</entry>
+            </row>
+            <row>
+              <entry>Next track accessed</entry>
+              <entry>Number of tracks traversed</entry>
+              <entry>Next track accessed</entry>
+              <entry>Number of tracks traversed</entry>
+            </row>
+            <row>
+              <entry>110</entry>
+              <entry>10</entry>
+              <entry>110</entry>
+              <entry>10</entry>
+            </row>
+            <row>
+              <entry>120</entry>
+              <entry>10</entry>
+              <entry>120</entry>
+              <entry>10</entry>
+            </row>
+            <row>
+              <entry>129</entry>
+              <entry>9</entry>
+              <entry>129</entry>
+              <entry>9</entry>
+            </row>
+            <row>
+              <entry>147</entry>
+              <entry>18</entry>
+              <entry>147</entry>
+              <entry>18</entry>
+            </row>
+            <row>
+              <entry>186</entry>
+              <entry>39</entry>
+              <entry>186</entry>
+              <entry>39</entry>
+            </row>
+            <row>
+              <entry>64</entry>
+              <entry>122</entry>
+              <entry>10</entry>
+              <entry>176</entry>
+            </row>
+            <row>
+              <entry>41</entry>
+              <entry>23</entry>
+              <entry>27</entry>
+              <entry>17</entry>
+            </row>
+            <row>
+              <entry>27</entry>
+              <entry>14</entry>
+              <entry>41</entry>
+              <entry>14</entry>
+            </row>
+            <row>
+              <entry>10</entry>
+              <entry>17</entry>
+              <entry>64</entry>
+              <entry>23</entry>
+            </row>
+            <row>
+              <entry>Average</entry>
+              <entry>29.1</entry>
+              <entry>Average</entry>
+              <entry>35.1</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para id="id4431798">Consider the disk system described in Problem 11.9 
+and assume the disk rotates at 360 rpm. A processor reads one sector from the 
+disk using interrupt-driven I/O, with one interrupt per byte. If it takes 2.5 μs 
+to process each interrupt, what percentage of time will the processor spend 
+handling I/O (disregard seek time)? Repeat using DMA, and assume one interrupt 
+per sector. </para>
+      <para id="id4431818">Answer:</para>
+      <para id="id4431822">If you have the disk rotating at 360 rpm, then one 
+byte is read off the disk in:</para>
+      <para id="id4431828">T = b/rN = 1/(360 rpm*512 bytes/sector * 96 
+sectors/track)</para>
+      <para id="id4431833">T = 3.4 μs</para>
+      <para id="id4431838">If one interrupt occurs every byte, then the 
+operating system will process an interrupt (2.5 μs), then do some work, then 
+process another interrupt, etc. The time between interrupts is equal to the time 
+it takes to read one byte. In other words, the disk will read one byte, then 
+interrupt the operating system, then read another byte. The operating system 
+will only be able to get work done if it has enough time to finish processing an 
+interrupt before the next one occurs. In this case, the processor will spend 2.5 
+μs / 3.4 μs or 74% of its time handling I/O.</para>
+      <para id="id4431858">With DMA, there is only one interrupt for the entire 
+sector. It takes 3.4 μs/byte * 512 bytes/sector = 1,741 μs to read the sector. 
+Therefore the processor only spends 2.5 μs / 1741 μs = .14% of the time handling 
+I/O.</para>
+      <para id="id4431873">Note: The above answer does not take into account 
+rotational delay. If you include rotational delay, then the time to read a byte 
+becomes very large:</para>
+      <para id="id4431887">T = b/rN + 1/2r = 83 ms</para>
+      <para id="id4431891">This means the time the processor spends processing 
+interrupts is very small (approximately .003% in both cases). </para>
+    </section>
+    <section id="id-322290047307">
+      <title>It should be clear that disk striping can improve the data transfer 
+rate when the strip size is small compared to the I/O request size. It should 
+also be clear that RAID 0 provides improved performance relative to a single 
+large disk, because multiple I/O requests can be handled in parallel. However, 
+in this latter case, is disk striping necessary? That is, does disk striping 
+improve I/O request rate performance compared to a comparable disk array without 
+striping? </title>
+      <para id="id4431913">Answer:</para>
+      <para id="id4431921">Consider a disk array that does not use striping. If 
+multiple I/O requests are issued for files on different disks, then performance 
+is the same as a striped disk array. However, the advantage of striping is that 
+it improves the chances that multiple I/O requests will in fact be for data on 
+different disks. Without striping, all the files from a given directory will be 
+on the same disk, so a single user operating in a single directory will be using 
+one disk instead of all the disks in the array. Likewise, it is likely that all 
+user files will be on one disk, and all binaries on another, so that multiple 
+users accessing their files will use the same disk. Disk striping is a simple, 
+automated way for the administrator of the array to ensure that files are spread 
+out across all the disks.</para>
+    </section>
+    <section id="id-819539199536">
+      <title>You purchase a disk drive that spins at 9600 RPM, stores 300 KB per 
+track, and has an average seek time of 8 ms.</title>
+      <list id="id4431948" list-type="bulleted">
+        <item>What is the average transfer time to read a 1 MB file, assuming 
+the file is stored on consecutive tracks? </item>
+      </list>
+      <para id="id4431956">T = Ts + 1/(2r) + b/(rN)</para>
+      <para id="id4431973">T = .008 + (60 s/m)(1 r)/ (2*9600 r/m) + (1 MB)(1024 
+KB/MB)(60 s/m)/(9600 r/m)(300 KB/r)</para>
+      <para id="id4431978">T = .008 s + .003125 s + .021333 s</para>
+      <para id="id4431983">T = 32.458 ms</para>
+      <list id="id4431987" list-type="bulleted">
+        <item>What is the average transfer time to read a 1 MB file, assuming 
+that the file is stored in 10 separate locations on the disk, and each location 
+has 100 KB of contiguous data? </item>
+      </list>
+      <para id="id4431996">T = 10*(Ts + 1/(2r) + 1/(rN))</para>
+      <para id="id4432013">T = 10(.008 s + .003125 s + (100 KB)(60 s/m)/(9600 
+rpm)(300 KB/r)</para>
+      <para id="id4432018">T = 10(.008 s + .003125 s + .002083 s)</para>
+      <para id="id4432022">T = 132.083 ms</para>
+    </section>
+    <section id="id-443511118593">
+      <title>What file organization would you choose to maximize efficiency in 
+terms of speed of access, use of storage space, and ease of updating 
+(adding/deleting/modifying) when the data are: </title>
+      <list id="id4432038" list-type="bulleted">
+        <item>updated infrequently and accessed frequently in random order? 
+</item>
+      </list>
+      <para id="id4432045">Both the indexed file organization and the hashed 
+file are efficient for frequent access to random parts of a file. Since the file 
+is updated infrequently, the overhead of keeping indexes is reduced.</para>
+      <list id="id4432053" list-type="bulleted">
+        <item>updated frequently and accessed in its entirety relatively 
+frequently? </item>
+      </list>
+      <para id="id4432063">The indexed sequential file is efficient when access 
+is usually to the entire file in sequential order. Keeping multiple indexes adds 
+unnecessary overhead and the hash structure is not as useful for sequential 
+access.</para>
+      <list id="id4432071" list-type="bulleted">
+        <item>updated frequently and accessed frequently in random order? 
+</item>
+      </list>
+      <para id="id4432080">The hashed file is efficient for frequent updates, 
+and also is efficient for random access.</para>
+    </section>
+    <section id="id-775339858373">
+      <title>Consider a hierarchical file system in which free disk space is kept 
+in a free space list. </title>
+      <list id="id4432096" list-type="bulleted">
+        <item>Suppose the pointer to free space is lost. Can the system 
+reconstruct the free space list? </item>
+      </list>
+      <para id="id4258061">Yes, it is easy to recover the lost space. Keep a bit 
+map for every block on the disk, initially set to zero. Then traverse the file 
+system starting at the root, and mark the bit mask with a 1 for every block that 
+is used by every file. In the end, those blocks still marked by a zero are 
+free.</para>
+      <list id="id4258070" list-type="bulleted">
+        <item>Suggest a scheme to ensure that the pointer is never lost as a 
+result of a single memory failure. </item>
+      </list>
+      <para id="id4258080">One solution is to keep a copy of the free space 
+pointer in several different places on the disk.</para>
+    </section>
+    <section id="id-2206912982">
+      <title>Consider the organization of a UNIX file as represented by the inode 
+(Figure 12.13). Assume that there are 12 direct block pointers in a singly, 
+doubly, and triply indirect pointer in each inode. Further, assume that the 
+system block size and the disk sector size are both 8K. If the disk block 
+pointer is 32 bits, with 8 bits to identify the physical disk and 24 bits to 
+identify the physical block, then </title>
+      <list id="id4258100" list-type="bulleted">
+        <item>What is the maximum file size supported by this system? </item>
+      </list>
+      <para id="id4258110">The maximum file size can be found by calculating the 
+space all the different types of block pointers can reference. First we need to 
+calculate the number of pointers an indirect block can hold:</para>
+      <para id="id4258117">N = 8*1024*8/32 = 2048</para>
+      <para id="id4258122">Then:</para>
+      <para id="id4258126">Size = 12*8 + 2048*8 + 2048*2048*8 + 2048*2048*2048*8 
+KB = 64 TeraBytes</para>
+      <list id="id4258132" list-type="bulleted">
+        <item>What is the maximum file system partition supported by this 
+system? </item>
+      </list>
+      <para id="id4258142">The maximum file system partition is essentially 
+equal to the size of a disk. Since we use 24 bits to address the blocks on each 
+disk, the maximum size of a disk is 128 GB.</para>
+      <list id="id4258149" list-type="bulleted">
+        <item>Assuming no information other than that the file inode is already 
+in main memory, how many disk accesses are required to access the byte in 
+position 13,423,956? </item>
+      </list>
+      <para id="id4258160">The address given is in the 13 MB range. The 12 
+direct pointers cover 96K, so the address is not located there. The singly 
+indirect pointer covers the next 16 MB of the file, so the address is in a block 
+referenced by the singly indirect pointer. This means we will need two disk 
+accesses, one for the indirect block and another for the block containing the 
+data.</para>
+    </section>
+    <section id="id-756774968761">
+      <title>What services are provided by TCP that are not provided by UDP? 
+Briefly explain what each of these services does. </title>
+      <list id="id4258180" list-type="bulleted">
+        <item>reliability: TCP ensures that whenever a source host sends a 
+message, it will be received by the destination host in the order it was sent. 
+If the network drops or corrupts the packet, TCP will retransmit it until it is 
+received correctly.</item>
+        <item>flow control: TCP checks how much data the destination host can 
+buffer, then makes sure the source host does not send more than this amount at a 
+time. This keeps the source host from sending data faster than the destination 
+host can receive it.</item>
+        <item>congestion control: TCP continually adapts to current network 
+conditions, and slows down the source host if the network becomes congested. 
+This keeps the source from sending data faster than the network can deliver 
+it.</item>
+      </list>
+    </section>
+    <section id="id-327960974495">
+      <title>Explain how UDP traffic can "take over" the network when competing 
+with TCP traffic. </title>
+      <para id="id4258240">UDP does not use congestion control, so all it has to 
+do is send at whatever rate it desires. If this causes packet loss due to 
+congestion in a router (a FIFO queue overflowing), then the TCP flows will slow 
+down. If UDP sends at a high enough rate, it can force the TCP flows to slow 
+down enough that they get nothing.</para>
+    </section>
+    <section id="id-293896877994">
+      <title>Why does a UDP server need only one socket but a TCP server needs 
+one socket for each client? </title>
+      <para id="id4258260">A UDP server needs only one socket because anyone can 
+send to it on that socket. It does not establish connections to each client. A 
+TCP server, on the other hand, needs a socket for each client because it 
+establishes a separate connection for each one.</para>
+    </section>
+  </content>
+</document>

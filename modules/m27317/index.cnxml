@@ -1,0 +1,801 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>I/O devices and File systems</title>
+  <metadata>
+  <md:content-id>m27317</md:content-id><md:title>I/O devices and File systems</md:title>
+  <md:abstract>IO devices and File systems</md:abstract>
+  <md:uuid>3c560b10-ed9c-4238-9a25-b50059a8ee67</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-794348015336">
+      <title>I/O Device Characteristics: </title>
+      <section id="id-911869915689">
+        <title>Terminal. </title>
+        <list id="id4032573" list-type="bulleted">
+          <item>One character (8 bits of data or control function) is sent at a 
+time, one interrupt per character. </item>
+          <item>10-1800 characters per second. </item>
+          <item>Keyboard and display are independent in most systems (no 
+automatic echo, full duplex). </item>
+          <item>Usually handled with one interrupt per character, but sometimes 
+DMA nowadays. </item>
+        </list>
+      </section>
+      <section id="id-932399717674">
+        <title>Raster Printers. </title>
+        <list id="id4032608" list-type="bulleted">
+          <item>Bit mapped (one bit for each dot). </item>
+          <item>Typically about 300 to 1200 dots per inch. </item>
+          <item>Impact, ink jet, or laser printing. </item>
+        </list>
+      </section>
+      <section id="id-0845986403746">
+        <title>Tape. </title>
+        <list id="id4032633" list-type="bulleted">
+          <item>8mm wide by 750 feet long, or 1/2" wide by 2500 feet long.. 
+</item>
+          <item>Multi-track, helical, serpentine. </item>
+          <item>Variable length records. </item>
+          <item>Capacities go up to 70 GB/tape. </item>
+          <item>Densities of more than 30 KB/cm. </item>
+          <item>Inter-record gaps ofs about 10mm. </item>
+          <item>Transfer rates up to 5-500 MB/second. </item>
+          <item>Can read or write, but cannot write in middle. Can skip records. 
+</item>
+          <item>Tapes are DMA devices, not one interrupt per character. </item>
+        </list>
+      </section>
+      <section id="id-748429260126">
+        <title>Disk. </title>
+        <list id="id4032692" list-type="bulleted">
+          <item>Draw picture of spindle, platters, read/write-arm. </item>
+          <item>Typically about 1024 cylinders, 20 tracks per cylinder, 32 
+sectors per track, 512 bytes per sector. </item>
+          <item>This is a total of about 1 GB per disk, or 500,000 double-spaced 
+typewritten pages. Typically sectors are fixed length (512-4096 bytes are 
+popular sizes). </item>
+          <item>Sectors can be read and written individually, or in adjacent 
+groups. </item>
+          <item>Seek time = 5-100 ms, latency is 0-15 ms (drive spins at 3600-
+7200 RPM). This is the standard for medium term computer storage. Transfer times 
+are about 5-20 MB/second. These times depend on drive, controller, and interface 
+standard (IDE, SCSI). </item>
+        </list>
+        <para id="id4032730">
+          <media id="id1166736621454" alt=""><image src="../../media/graphics1-5503.png" mime-type="image/png" height="408" width="638"/></media>
+        </para>
+      </section>
+      <section id="id-530279639647">
+        <title>CD-ROMs. </title>
+        <list id="id4032773" list-type="bulleted">
+          <item>Current CD-ROMS's can hold up to 720 MB (650 MB is more typical) 
+of data or 74 minutes of uncompressed audio. The data is organized in one (or a 
+few) continuous spirals. The block size is 2K and "tracks" vary in size from 8 
+to 23 blocks There is extensive error correction information encoded with the 
+data. </item>
+          <item/>
+          <item>Seek time = 100-300 ms. Transfer times are about .3-1.5 
+MB/second (for 2X-10X). 1X (150 KB/second) is needed for audio CD's. </item>
+          <item>Next generation CD (DVD) should store about 5-10 GB and be fully 
+readable and writable. These drives will handle fully integrated data, audio, 
+and video. There are currently several competing standards (ala the VHS vs. Beta 
+competition of the 80's). </item>
+        </list>
+        <para id="id4032803">Disks and tapes read and write blocks of 
+information rather than single bytes: </para>
+        <list id="id4032809" list-type="bulleted">
+          <item>Storage efficiency: give example for tape. At 1600 bpi, 80-byte 
+records use .05 inch, gaps use .6 inch, tape is all gap. However, 8000-byte 
+records use 5 inches so gaps are only about 11% of the tape. In the case of 
+disks, there are a couple of thousand bits of leader at the beginning of each 
+sector used to identify the sector and to synchronize when reading. For 1000-
+byte sectors, 20% of the disk space is wasted. </item>
+          <item>Access efficiency: on disk it typically takes 25ms overhead 
+before transfer begins. The actual transfer is only about 1 microsecond per 
+byte. Thus one-byte transfers take 25ms total time/byte, 1000-byte transfers 
+take about 25 ms total time/byte. Re-iterate the importance of eliminating 
+seeks. </item>
+        </list>
+        <para id="id4032834">Two common I/O device access methods: DMA and CPU 
+control</para>
+      </section>
+    </section>
+    <section id="id-814489729864">
+      <title>Direct Memory Access (DMA) </title>
+      <para id="id4032852">In simple systems, the CPU must move each data byte 
+to or from the bus using a LOAD or STORE instruction, as if the data were being 
+moved to memory. This quickly uses up much of the CPU's computational power. In 
+order to allow systems to support high I/O utilization while the CPU is getting 
+useful work done on the users' behalf, devices are allowed to directly access 
+memory. This direct access of memory by devices (or controllers is called Direct 
+Memory Access, commonly abbreviated DMA). </para>
+      <para id="id4032868">The CPU is still responsible for scheduling the 
+memory accesses made by DMA devices, but once the program has been established, 
+the CPU has no further involvement until the transfer is complete. Typically DMA 
+devices will issue interrupts on I/O completion. </para>
+      <para id="id4032876">Because this memory is not being manipulated by the 
+CPU, and therefore addresses may not pass through an MMU, DMA devices often 
+confuse or are confused by virtual memory. It is important to guarantee that 
+memory intended for use by a DMA device is not manipulated by the paging system 
+while the I/O is being performed. Such pages are usually frozen (or pinned) to 
+avoid changes. </para>
+      <para id="id4032887">In some sense DMA is simply an intermediate step to 
+general purpose programmability on devices and device controllers. Several such 
+smart controllers exist, with features ranging from bit swapping, to digital 
+signal processing, checksum calculations, encryption and compression and general 
+purpose processors. Dealing with that programmability requires synchronization 
+and care. Moreover, in order for code to be portable, writing an interface to 
+such smart peripherals is often a delicate balancing act between making features 
+available and making the device unrecognizable. </para>
+    </section>
+    <section id="id-856772270762">
+      <title>I/O Software </title>
+      <para id="id4032912">The I/O software of the OS has several goals: </para>
+      <list id="id4032917" list-type="bulleted">
+        <item>Device Independence: All peripherals performing the same function 
+should have the same interface. All disks should present logical blocks. All 
+network adapters should accept packets. The protection of devices should be 
+managed consistently. For example devices should all be accessible by 
+capability, or all by the file system. In practice this is mitigated by the need 
+to expose some features of the hardware. </item>
+        <item>Uniform Naming: The OS needs to have a way to describe the various 
+devices in the system so that it can administer them. Again the naming system 
+should be as flexible as possible. Systems also have to deal with devices 
+joining or leaving the name space (PCMCIA cards). </item>
+        <item>Device Sharing: Most devices are shared at some granularity by 
+processes on a general purpose computer. It's the I/O system's job to make sure 
+that sharing is fair (for some fairness metric) and efficient. </item>
+        <item>Error Handling: Devices can often deal with errors without user 
+input - retrying a disk read or something similar. Fatal errors need to be 
+communicated to the user in an understandable manner as well. Furthermore, 
+although hiding errors can be good at some level, at other levels they should be 
+seen. Users must be able to tell that their disks are slowly failing. </item>
+        <item>Synchrony and Asynchrony: The I/O system needs to deal with the 
+fact that external devices are not synchronized with the internal clock of the 
+CPU. Events on disk drives occur without any regard for the state of the CPU, 
+and the CPU must deal with that. The I/O system code is what turns the 
+asynchronous interrupts into system events that can be handled by the CPU. 
+</item>
+      </list>
+    </section>
+    <section id="id-294778447287">
+      <title>Software Levels </title>
+      <section id="id-969316143668">
+        <title>Interrupt Handlers </title>
+        <para id="id4032992">The Interrupt Service Routines (ISRs) are short 
+routines designed to turn the asynchronous events from devices (and controllers) 
+into synchronous ones that the operating system can deal with in time. While an 
+ISR is executing, some set of interrupts is usually blocked, which is a 
+dangerous state of affairs that should be avoided as much as possible. </para>
+        <para id="id4033002">ISRs generally encode the information about the 
+interrupt into some queue that the OS checks regularly - e.g. on a context 
+switch. </para>
+      </section>
+      <section id="id-497005257848">
+        <title>Device Drivers </title>
+        <para id="id4033017">Device drivers are primarily responsible for 
+issuing the low-level commands to the hardware that gets the hardware to do what 
+the OS wants. As a result, many of them are hardware dependent. </para>
+        <para id="id4033024">Conceptually, perhaps the most important facet of 
+device drivers is the conversion from logical to physical addressing. The OS may 
+be coded in terms of logical block numbers for a file, but it is the device 
+driver that converts such logical addresses to real physical addresses and 
+encodes them in a form that the hardware can understand. </para>
+        <para id="id4033034">Device drivers may also be responsible for 
+programming smart controllers, multiplexing requests and de-multiplexing 
+responses, and measuring and reporting device performance. </para>
+      </section>
+      <section id="id-236135461276">
+        <title>Device Independent OS Code </title>
+        <para id="id4033053">This is the part of the OS we've really been 
+talking the most about. This part of the OS provides consistent device naming 
+and interfaces to the users. It enforces protection, and does logical level 
+caching and buffering. </para>
+        <para id="id4033064">In addition to providing a uniform interface, the 
+uniform interface is sometimes pierced at this level to expose specific hardware 
+features -- CD audio capabilities, for instance. </para>
+        <para id="id4033071">The device independent code also provides a 
+consistent error mode to users, letting them know what general errors occurred 
+when the device driver couldn't recover. </para>
+      </section>
+      <section id="id-0788188631098">
+        <title>User Code </title>
+        <para id="id4033086">Even the OS code is relatively rough and ready. 
+User libraries provide simpler interfaces to I/O systems. Good examples are the 
+standard I/O library that provides a simplified interface to the filesystem. 
+printf and fopen are easier to use than write and open. Specifically such 
+systems handle data formatting and buffering. </para>
+        <para id="id4033096">Beyond that there are user level programs that 
+specifically provide I/O services (daemons). Such programs spool data, or 
+directly provide the services users require. </para>
+      </section>
+    </section>
+    <section id="id-562728834734">
+      <title>Files, Disk Management</title>
+      <para id="id4033115">File: a named collection of bits stored on disk. From 
+the OS' standpoint, the file consists of a bunch of blocks stored on the device. 
+Programmer may actually see a different interface (bytes or records), but this 
+does not matter to the file system (just pack bytes into blocks, unpack them 
+again on reading). </para>
+      <para id="id4033125">Common addressing patterns: </para>
+      <list id="id4033129" list-type="bulleted">
+        <item>Sequential: information is processed in order, one piece after the 
+other. This is by far the most common mode: e.g. editor writes out new file, 
+compiler compiles it, etc. </item>
+        <item>Random Access: can address any record in the file directly without 
+passing through its predecessors. E.g. the data set for demand paging, also 
+databases. </item>
+        <item>Keyed: search for records with particular values, e.g. hash table, 
+associative database, dictionary. Usually not provided by operating system. TLB 
+is one example of a keyed search. </item>
+      </list>
+      <para id="id4033168">Modern file systems must address four general 
+problems: </para>
+      <list id="id4033173" list-type="bulleted">
+        <item>Disk Management: efficient use of disk space, fast access to 
+files, sharing of space between several users. </item>
+        <item>Naming: how do users select files? </item>
+        <item>Protection: all users are not equal. </item>
+        <item>Reliability: information must last safely for long periods of 
+time. </item>
+      </list>
+      <para id="id4033200">Disk Management: how should the disk sectors be used 
+to represent the blocks of a file? The structure used to describe which sectors 
+represent a file is called the file descriptor. </para>
+      <para id="id4033220">Contiguous allocation: allocate files like segmented 
+memory (give each disk sector a number from 0 up). Keep a free list of unused 
+areas of the disk. When creating a file, make the user specify its length, 
+allocate all the space at once. Descriptor contains location and size. </para>
+      <para id="id4033229">
+        <figure id="id4033232">
+          <media id="id1166736618174" alt=""><image src="../../media/s24.contig.png" mime-type="image/png" height="293" width="277"/></media>
+        </figure>
+      </para>
+      <list id="id4033260" list-type="bulleted">
+        <item>Advantages: easy access, both sequential and random. Simple. Few 
+seeks. </item>
+        <item>Drawbacks: horrible fragmentation will preclude large files, hard 
+to predict needs. With interleaved user requests, still cannot eliminate all 
+seeks. </item>
+      </list>
+      <para id="id4033277">Linked files: In file descriptor, just keep pointer 
+to first block. In each block of file keep pointer to next block. It can also 
+keep a linked list of free blocks for the free list. </para>
+      <para id="id4033288">
+        <media id="id1166736630193" alt=""><image src="../../media/graphics2-b138.png" mime-type="image/png" height="298" width="277"/></media>
+      </para>
+      <list id="id4033322" list-type="bulleted">
+        <item>Advantages: files can be extended, no fragmentation problems. 
+Sequential access is easy: just chase links. </item>
+        <item>Drawbacks: random access is virtually impossible. Lots of seeking, 
+even in sequential access. </item>
+        <item>Example: FAT (MSDOS) file system. </item>
+      </list>
+      <para id="id4033344">Array of block pointers: file maximum length must be 
+declared when it is created. Allocate an array to hold pointers to all the 
+blocks, but do not allocate the blocks. Then fill in the pointers dynamically 
+using a free list. </para>
+      <para id="id4033352">
+        <media id="id1166736630270" alt=""><image src="../../media/graphics3-f72f.png" mime-type="image/png" height="345" width="480"/></media>
+      </para>
+      <list id="id4033387" list-type="bulleted">
+        <item>Advantages: not as much space wasted by overpredicting, both 
+sequential and random accesses are easy. </item>
+        <item>Drawbacks: still have to set maximum file size, and there will be 
+lots of seeks. </item>
+      </list>
+      <para id="id4033407">DOS FAT allocation table: A single File Allocation 
+Table (FAT) that combines free list info and file allocation info. In file 
+descriptor, keep pointer to first block. A FAT table entry contains either (1) 
+the block number of the next block in the file, (2) a distinguished "end of 
+file" (eof) value, or (3) a distinguished "free" value. </para>
+      <para id="id4033417">
+        <media id="id1166736630344" alt=""><image src="../../media/graphics4-087e.png" mime-type="image/png" height="415" width="649"/></media>
+      </para>
+      <list id="id4033451" list-type="bulleted">
+        <item>Advantages/Disadvantages: similar to those mentioned above for 
+linked file. </item>
+      </list>
+      <para id="id4033461">None of these is a very good solution: what is the 
+answer? First, and MOST IMPORTANT: understand the application. How are file 
+systems used? </para>
+      <list id="id4033467" list-type="bulleted">
+        <item>Most files are small. </item>
+        <item>Much of the disk is allocated to large files. </item>
+        <item>Many of the I/O's are made to large files. </item>
+      </list>
+      <para id="id4033486">Thus, the per-file cost must be low, but the 
+performance of large files must be good. File systems must allow reasonably fast 
+random access, extensibility. </para>
+    </section>
+    <section id="id-986873072807">
+      <title>Unix and DEMOS Disk Allocation</title>
+      <para id="id4033503">Storage Management: For a given file, how the does OS 
+find the blocks contained in that file? The data structure that decribes the 
+contents of file is generically called a file descriptor. We will see several 
+other names, as we study about file systems. </para>
+      <para id="id4033523">The file descriptor information has to be stored on 
+disk, so it will stay around even when the OS does not. </para>
+      <list id="id4033530" list-type="bulleted">
+        <item>In Unix, all the descriptors are stored in a fixed size array on 
+disk. The descriptors also contain protection and accounting information. 
+</item>
+        <item>A special area of disk is used for this (disk contains two parts: 
+the fixed-size descriptor array, and the remainder, which is allocated for data 
+and indirect blocks). </item>
+        <item>The size of the descriptor array is determined when the disk is 
+initialized, and cannot be changed. In Unix, the descriptor is called an i-node, 
+and its index in the array is called its i-number. Internally, the OS uses the 
+i-number to refer to the file. </item>
+        <item>When a file is open, its descriptor is kept in main memory. When 
+the file is closed, the descriptor is stored back to disk. </item>
+      </list>
+      <para id="id4033585">
+        <media id="id1166736614376" alt=""><image src="../../media/graphics5-4a32.png" mime-type="image/png" height="254" width="323"/></media>
+      </para>
+      <para id="id4033619">The Typical Unix Inode</para>
+      <list id="id4033624" list-type="bulleted">
+        <item>File descriptors: 13 block pointers. The first 10 point to data 
+blocks, the next three to indirect, doubly-indirect, and triply-indirect blocks 
+(256 pointers in each indirect block). Maximum file length is fixed, but large. 
+Descriptor space is not allocated until needed. </item>
+        <item>Examples: block 23, block 5 block 340 </item>
+        <item>Free blocks: stored on a free list in no particular order. </item>
+        <item>Go through examples of allocation and freeing. </item>
+        <item>Advantages: simple, easy to implement, incremental expansion, easy 
+access to small files. </item>
+        <item>Drawbacks: <list id="id4033667" list-type="bulleted"><item>Indirect 
+mechanism does not provide very efficient access to large files: 3 descriptor 
+ops for each real operation. A cache is used, but this takes up main memory 
+space. </item><item>Block-by-block organization of free list means that that 
+file data gets spread around the disk. </item></list></item>
+      </list>
+      <para id="id4033683">
+        <media id="id1166736614504" alt=""><image src="../../media/graphics6-91bb.png" mime-type="image/png" height="761" width="585"/></media>
+      </para>
+    </section>
+    <section id="id-666317545276">
+      <title>The Demos File System</title>
+      <para id="id4033725">Demos was an operating system written especially for 
+high performance systems, originally the Cray 1. Its design continues to 
+influence systems today. </para>
+      <para id="id4033735">The Demos solution: allocates files contiguously, has 
+more compact file descriptors, uses more CPU time. (refer to contiguous 
+allocation picture in section 26). </para>
+      <para id="id4033742">
+        <media id="id1166736600108" alt=""><image src="../../media/graphics7-718e.png" mime-type="image/png" height="517" width="694"/></media>
+      </para>
+      <list id="id4033776" list-type="bulleted">
+        <item>File descriptors: select sequences of physical blocks, called 
+block groups, rather than single blocks. Block groups were called extents by 
+IBM. </item>
+        <item>A block group has three fields: <list id="id4033813" list-type="bulleted"><item>Starting disk block: the starting address on disk of this 
+block group,</item><item>Starting logical block: the starting block number 
+within the file for the block group,</item><item>Count: the number of blocks in 
+the group.</item></list></item>
+        <item>There are 10 block groups in file descriptor; if files become 
+large, then these become pointers to groups of indirect blocks. The resulting 
+structure is like a B-tree. </item>
+        <item>Free blocks: described with a bit map. Just an array of bits, one 
+per block. 1 means block free, 0 means block allocated. For a 300 Mbyte drive 
+there are about 300000 1kbyte blocks, so bit map takes up 40000 bytes. Keep only 
+a small part of the bit map in memory at once. In allocation, scan bit map for 
+adjacent free blocks. </item>
+        <item>Advantages: <list id="id4033868" list-type="bulleted"><item>It is easy 
+to allocate block groups, since the bit map automatically merges adjacent free 
+blocks. </item><item>File descriptors take up less space on disk, require fewer 
+accesses in random access to large files. </item></list></item>
+        <item>Disadvantages: <list id="id4033889" list-type="bulleted"><item>Slightly 
+more complex than Unix scheme: trades CPU time for disk access time (OK for 
+CRAY-1). </item><item>When disk becomes full, this becomes VERY expensive, and 
+does not get much in the way of adjacency. </item></list></item>
+      </list>
+      <para id="id4033904">Even if it is possible to allocate in groups, how do 
+you know when to do it? Be guided by history: if file is already big, it will 
+probably get bigger. </para>
+    </section>
+    <section id="id-701605485307">
+      <title>Crash Recovery</title>
+      <para id="id4033922">Computers can crash at any time, and we want the file 
+system to behave sensibly in the face of crashes. The key idea is called 
+consistency: </para>
+      <list id="id4033940" list-type="bulleted">
+        <item>The file data and the various control structures (descriptors, 
+bitmaps) must be in agreement. </item>
+        <item>Since crashes can occur at any time, not all updates to the disk 
+may be completed. </item>
+        <item>We must insure that when the system reboots, it can return its 
+file system to some sensible state. </item>
+        <item>The key constraint is that any file system write operation, in 
+progress at the time of the crash, either completely finishes or appears as if 
+it never happened. This is called atomicity by the database folks. </item>
+      </list>
+      <para id="id4033984">Insuring consistency requires two things: </para>
+      <list id="id4033988" list-type="bulleted">
+        <item>Updates to the file system data structures must be done in the 
+write order (and there is only one right order)! </item>
+        <item>The proper steps must be taken at reboot time to bring the system 
+back in to a consistent state. </item>
+      </list>
+      <para id="id4034017">There are three basic updates that happen when data 
+is written to a file. </para>
+      <list id="id4034023" list-type="enumerated">
+        <item>A block (or blocks) is allocated from the free list (bit 
+map).</item>
+        <item>Data is written to the newly allocated block.</item>
+        <item>The inode is updated to include the new data.</item>
+      </list>
+      <para id="id4034045">These operations must be done in the above order. If 
+they are not, then it is possible to have a data block included in a file that 
+might have garbage (uninitialized data) in the block. </para>
+      <para id="id4034052">After rebooting, the recovery utility program on 
+Unix, called "fsck", is going to traverse the entire directory structure of the 
+disk to insure that all free blocks are in the free list. </para>
+      <para id="id4034059">Recovery after a crash follows these steps: </para>
+      <list id="id4034064" list-type="enumerated">
+        <item>Allocate a temporary bit map, initialized to indicate that all 
+disk blocks are free.</item>
+        <item>Start at the inode for the root directory.</item>
+        <item>Traverse the directory: <list id="id4034085" list-type="bulleted"><item>For each disk data block in the directory file, marks its 
+blocks as "allocated" in the bit map.</item><item>For each data file in this 
+directory, marks its data blocks as "allocated" in the bit map.</item><item>For 
+each directory in this directory, perform the "Traverse the directory" steps 
+above.</item></list></item>
+      </list>
+      <para id="id4034107">At the completion of the algorithm, you can compare 
+the actual bit map to the temporary one to find blocks that were allocated, but 
+never made it into a file.</para>
+    </section>
+    <section id="id-0226518426607">
+      <title>Directories</title>
+      <section id="id-130260868936">
+        <title>Motivation</title>
+        <para id="id4034132">Users need a way of finding the files that they 
+created on disk. One approach is just to have users remember descriptor indexes. 
+</para>
+        <para id="id4034138">Of course, users want to use text names to refer to 
+files. Special disk structures called directories are used to tell what 
+descriptor indices correspond to what names. </para>
+        <para id="id4034157">A hard concept to understand at the beginning: 
+naming is one of the (if not the) most important issues in systems design. 
+</para>
+        <para id="id4034175">Approach #1: have a single directory for the whole 
+disk. Use a special area of disk to hold the directory. </para>
+        <list id="id4034181" list-type="bulleted">
+          <item>Directory contains pairs. </item>
+          <item>If one user uses a name, no-one else can. </item>
+        </list>
+        <para id="id4034196">Approach #2: have a separate directory for each 
+user (TOPS-10 approach). This is still clumsy: names from different projects get 
+confused. </para>
+      </section>
+      <section id="id-137724127402">
+        <title>Unix Directories</title>
+        <para id="id4034210">Unix approach compares the directory structure to a 
+tree. </para>
+        <para id="id4034216">
+          <media id="id1166736554236" alt=""><image src="../../media/graphics8-a307.png" mime-type="image/png" height="251" width="454"/></media>
+        </para>
+        <list id="id4034250" list-type="bulleted">
+          <item>Directories are stored on disk just like regular files (i.e. 
+file descriptor with 13 pointers, etc.). User programs can read directories just 
+like any other file (try it!). Only special system programs may write 
+directories. </item>
+          <item>Each directory contains pairs. The file pointed to by the index 
+may be another directory. Hence, get hierarchical tree structure, name with 
+/usr/local. </item>
+          <item>There is one special directory, called the root. This directory 
+has no name, and is the file pointed to by descriptor 2 (descriptors 0 and 1 
+have other special purposes). </item>
+        </list>
+        <para id="id4034290">It is very nice that directories and file 
+descriptors are separate, and the directories are implemented just like files. 
+This simplifies the implementation and management of the structure (can write 
+"normal" programs to manipulate them as files). </para>
+        <para id="id4034298">Working directory: it is cumbersome constantly to 
+have to specify the full path name for all files. </para>
+        <list id="id4034304" list-type="bulleted"><item>In Unix, there is one directory per process, called the working 
+directory, that the system remembers. </item>
+          <item>When it gets a file name, it assumes that the file is in the 
+working directory. "/" is an escape to allow full path names. </item>
+          <item>Many systems allow more than one current directory. For example, 
+check first in A, then in B, then in C. This set of directories is called the 
+search path or search list. This is very convenient when working on large 
+systems with many different programmers in different areas. </item>
+          <item>For example, in Unix the shell will automatically check in 
+several places for programs. However, this is built into the shell, not into 
+Unix, so if any other program wants to do the same, it has to rebuild the 
+facilities from scratch. </item>
+          <item>This is yet another example of locality. </item>
+        </list>
+      </section>
+    </section>
+    <section id="id-681011905374">
+      <title>Windows (NT) File System</title>
+      <section id="id-388599930539">
+        <title>Background</title>
+        <para id="id4034384">The Windows file system is called NTFS, and was 
+introduced with Windows NT 4.0 and is the standard file system on Windows 2000 
+and later systems, such as Windows XP. Its goal was to solve the size, 
+performance, reliability, and flexibility limitations in the DOS (aka "FAT" file 
+system). </para>
+        <para id="id4034393">It has a general similarity to the FAT file system 
+in that all files are described in a single table, called the Master File Table 
+(MFT). However, it has more modern characteristics in that all components are 
+files, including: </para>
+        <table id="id4034413" summary="">
+          <tgroup cols="2">
+            <colspec colnum="1" colname="c1"/>
+            <colspec colnum="2" colname="c2"/>
+            <tbody>
+              <row>
+                <entry>
+          FIXME: A LIST CAN NOT BE A TABLE ENTRY.
+          Master File Tabledata filesdirectories</entry>
+                <entry>
+          FIXME: A LIST CAN NOT BE A TABLE ENTRY.
+          free list (bit map)boot imagesrecovery logs</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <para id="id4034481">The file system also has features to support 
+redundancy and transactions, which we will not discuss. A great reference for 
+details is the book: Inside the Windows NT File System by Helen Custer, 
+published by (not surprisingly) Microsoft Press. </para>
+      </section>
+      <section id="id-866180804704">
+        <title>Disk Layout</title>
+        <para id="id4034509">Disks are divided in fixed size regions: </para>
+        <list id="id4034516" list-type="bulleted">
+          <item>Each region is called a volume. </item>
+          <item>Each volume can contain a different kind of file system, such as 
+NTFS, FAT, or even Unix. </item>
+          <item>Since each volume is a separate file system, it has its own root 
+directory. </item>
+          <item>Multiple volumes allow for fixed limits on the growth of a 
+particular file tree, such as limiting the size of temporary file space. </item>
+          <item>Multiple volumes also allow a single disk to contain multiple, 
+separating bootable operating systems. </item>
+        </list>
+      </section>
+      <section id="id-987713595883">
+        <title>Master File Table (MFT)</title>
+        <para id="id4034573">Clusters are the key element to allocation: </para>
+        <list id="id4034578" list-type="bulleted">
+          <item>Logically, the disk consists of allocation units called 
+clusters. </item>
+          <item>A cluster is a power-of-two multiple of the physical disk block 
+size. The cluster size is set when the disk is formatted. A small cluster 
+provides a finer granularity of allocation, but may require more space to 
+describe the file and more separate operations to transfer data to or from 
+memory. </item>
+          <item>The free list is a bitmap, each of whose bits describe one 
+cluster. </item>
+          <item>Clusters on the disk are numbered starting from zero to the 
+maximum number of clusters (minus one). These numbers are called logical cluster 
+numbers (LCN) and are used to name blocks (clusters) on disk. </item>
+        </list>
+        <para id="id4034636">The MFT is the major, and in some ways, the only 
+data structure on disk: </para>
+        <list id="id4034642" list-type="bulleted">
+          <item>All files, and therefore all objects stored on disk are 
+described by the MFT. </item>
+          <item>All files are logically stored in the MFT and, for small files 
+are physically within the bounds of the MFT. In this sense, the MFT is the file 
+system. </item>
+          <item>The MFT logically can be described as a table with one row per 
+file. </item>
+          <item>The first rows in the table described important configuration 
+files, including files for the MFT itself. </item>
+        </list>
+        <para id="id4034693">
+          <media id="id1166736637186" alt=""><image src="../../media/graphics9-5b26.png" mime-type="image/png" height="340" width="401"/></media>
+        </para>
+      </section>
+      <section id="id-37375608687">
+        <title>MFT Entries</title>
+        <para id="id4034735">As stated previously, each row or entry in the MFT 
+(called a record) describes a file and logically contains the file. In the case 
+of small files, the entry actually contains the contents of the file. </para>
+        <para id="id4034754">Each entry is consists of (attribute, value) pairs. 
+While the conceptual design of NTFS is such that this set of pairs is extensible 
+to include user-defined attributes, current versions of NTFS have a fixed set. 
+The main attributes are: </para>
+        <list id="id4034765" list-type="bulleted">
+          <item>Standard information: This attribute includes the information 
+that was standard in the MS-DOS world: <list id="id4034783" list-type="bulleted"><item>read/write permissions,</item><item>creation 
+time,</item><item>last modification time,</item><item>count of how many 
+directories point to this file (hard link count.</item></list></item>
+          <item>File Name: This attribute describes the file's name in the 
+Unicode character set. Multiple file names are possible, such as when: <list id="id4034822" list-type="bulleted"><item>the file has multiple links, 
+or</item><item>the file has an MS-DOS short name.</item></list></item>
+          <item>Security Descriptor: This attribute lists which user owns the 
+file and which users can access it (and how they can access it). </item>
+          <item>Data: This attribute either contains the actual file data in the 
+case of a small file or points to the data (or points to the objects that point 
+to the data) in the case of larger files. </item>
+        </list>
+        <para id="id4034865">
+          <media id="id1166736637369" alt=""><image src="../../media/graphics10-5ad9.png" mime-type="image/png" height="80" width="587"/></media>
+        </para>
+        <para id="id4034899">For small files, this design is extremely 
+efficient. By looking no further than the MFT entry, you have the complete 
+contents of the file. </para>
+        <para id="id4034905">However, the Data field gets interesting when the 
+data contained in the file is larger than an MFT entry. When dealing with large 
+data, the Data attribute contains pointers to the data, rather than the data 
+itself. </para>
+        <list id="id4034925" list-type="bulleted">
+          <item>The pointers to data are actually pointers to sequences of 
+logical clusters on the disk. </item>
+          <item>Each sequence is identified by three parts: <list id="id4034941" list-type="bulleted"><item>starting cluster in the file, called the 
+virtual cluster number (VCN),</item><item>starting logical cluster (LCN) of the 
+sequence on disk,</item><item>length, counted as the number of 
+clusters.</item></list></item>
+          <item>The run of clusters is called an extent, following the 
+terminology developed by IBM in the 1960's. </item>
+          <item>NTFS allocates new extents as necessary. When there is no more 
+space left in the MFT entry, then another MFT entry is allocated. This design is 
+effectively a list of extents, rather than the Unix or DEMOS tree of extents. 
+</item>
+        </list>
+        <para id="id4035000">
+          <media id="id1166736637504" alt=""><image src="../../media/graphics11-7fb8.png" mime-type="image/png" height="327" width="675"/></media>
+        </para>
+        <para id="id4035034">Directories</para>
+        <para id="id4035038">As with other modern file systems, a directory in 
+NTFS is a file whose data contains a collection of name/file mappings. </para>
+        <list id="id4035044" list-type="bulleted">
+          <item>A directory entry contains the name of the file and file 
+reference. The file references identify the file on this volume. In other words, 
+it is an internal name for the file. </item>
+        </list>
+        <para id="id4035068">A reference is a (file number, sequence number) 
+pair. The file number is the offset of the file's entry in the MFT table. It is 
+similar to the Unix inumber (Inode number). </para>
+        <list id="id4035086" list-type="bulleted">
+          <item>The list of file names in the directories is not stored in a 
+simple list, but rather as a lexigraphically-sorted tree, called a B+ tree (this 
+will be familiar to those with a database background). The data structure is 
+called an index in NFTS (again, following the terminology from databases). 
+</item>
+          <item>The NTFS design specifies that an index can be constructed for 
+any attribute, but currently only file name indices are supported. </item>
+          <item>The name for a file appears both in its directory entry and in 
+the MFT entry for the file itself. </item>
+          <item>As with regular files, if the directory is small enough, it can 
+fit entirely within the MFT entry. </item>
+        </list>
+        <para id="id4035133">
+          <media id="id1166736637648" alt=""><image src="../../media/graphics12-4c46.png" mime-type="image/png" height="80" width="671"/></media>
+        </para>
+        <para id="id4035167">If the directory is larger, then the top part of 
+(the B+ tree of) the directory is in the MFT entry, which points to extents that 
+contain the rest of the name/file mappings. </para>
+        <para id="id4035174">
+          <media id="id1166736637698" alt=""><image src="../../media/graphics13-ea2e.png" mime-type="image/png" height="423" width="736"/></media>
+        </para>
+      </section>
+    </section>
+    <section id="id-978695949816">
+      <title>File System Crash Recovery</title>
+      <section id="id-38718441368">
+        <title>Unix File System Crash Recovery</title>
+        <para id="id4035225">Computers can crash at any time, and we want the 
+file system to behave sensibly in the face of crashes. The key idea is called 
+consistency: </para>
+        <list id="id4035243" list-type="bulleted">
+          <item>The file data and the various control structures (descriptors, 
+bitmaps) must be in agreement. </item>
+          <item>Since crashes can occur at any time, not all updates to the disk 
+may be completed. </item>
+          <item>We must insure that when the system reboots, it can return its 
+file system to some sensible state. </item>
+          <item>The key constraint is that any file system write operation, in 
+progress at the time of the crash, either completely finishes or appears as if 
+it never happened. This is called atomicity by the database folks. </item>
+        </list>
+        <para id="id4035287">Insuring consistency requires two things: </para>
+        <list id="id4035292" list-type="bulleted">
+          <item>Updates to the file system data structures must be done in the 
+write order (and there is only one right order)! </item>
+          <item>The proper steps must be taken at reboot time to bring the 
+system back in to a consistent state. </item>
+        </list>
+        <para id="id4035321">There are three basic updates that happen when data 
+is written to a file. </para>
+        <list id="id4035327" list-type="enumerated">
+          <item>A block (or blocks) is allocated from the free list (bit 
+map).</item>
+          <item>Data is written to the newly allocated block.</item>
+          <item>The inode is updated to include the new data.</item>
+        </list>
+        <para id="id4035349">These operations must be done in the above order. 
+If they are not, then it is possible to have a data block included in a file 
+that might have garbage (uninitialized data) in the block. </para>
+        <para id="id4035356">After rebooting, the recovery utility program on 
+Unix, called "fsck", is going to traverse the entire directory structure of the 
+disk to insure that all free blocks are in the free list. </para>
+        <para id="id4035363">Recovery after a crash follows these steps: </para>
+        <list id="id4035368" list-type="enumerated">
+          <item>Allocate a temporary bit map, initialized to indicate that all 
+disk blocks are free.</item>
+          <item>Start at the inode for the root directory.</item>
+          <item>Traverse the directory: <list id="id4035390" list-type="bulleted"><item>For each disk data block in the directory file, marks its 
+blocks as "allocated" in the bit map.</item><item>For each data file in this 
+directory, marks its data blocks as "allocated" in the bit map.</item><item>For 
+each directory in this directory, perform the "Traverse the directory" steps 
+above.</item></list></item>
+        </list>
+        <para id="id4035412">At the completion of the algorithm, you can compare 
+the actual bit map to the temporary one to find blocks that were allocated, but 
+never made it into a file. </para>
+      </section>
+      <section id="id-211787267708">
+        <title>Windows File System Crash Recovery</title>
+        <para id="id4035430">NTFS assures that the file system will remain 
+consistent by use of a write log. This technique is similar to that used in a 
+database system. </para>
+        <para id="id4035448">As in other file systems, consistency means that a 
+write (or group of writes) to a file either complete or do not happen at all. It 
+is not possible for a data block to be in an undefined state (e.g., allocated, 
+but not written). </para>
+        <list id="id4035456" list-type="bulleted">
+          <item>The log is one of those standard files stored at the beginning 
+of the MFT. It is called, cleverly enough, the log file. </item>
+          <item>A simplified version of the steps to write data to a file look 
+like: <list id="id4035485" list-type="bulleted"><item>A file update is written to the 
+in-memory log buffer.</item><item>Updates to the in-memory file data and 
+associated file system structures are made.</item><item>The log changes are 
+flushed to disk.</item><item>The file data and structure changes are flushed to 
+disk.</item></list></item>
+          <item>If the system crashes during a file update, it is sufficient to 
+go through the log an re-do each operation specified in the log. </item>
+          <item>The system occasionally creates checkpoints, so that it does not 
+have to back to the beginning of the log for recovery. Checkpoints have two main 
+benefits: </item>
+        </list>
+        <list id="id4035552" list-type="bulleted">
+          <item>Log files can be truncated, reducing the space needed for the 
+log.</item>
+          <item>Recovery time is faster if fewer log records need to be 
+processed.</item>
+        </list>
+      </section>
+    </section>
+    <section id="id-156232643338">
+      <title>Disk Scheduling</title>
+      <para id="id4035575">Disk scheduling: in a system with many processes 
+running, it can often be the case that there are several disk I/O's requested at 
+the same time. The order in which the requests are serviced may have a strong 
+effect on the overall performance of the disk. </para>
+      <para id="id4035584"><emphasis>First come first served (FIFO, 
+FCFS):</emphasis> may result in a lot of unnecessary disk arm motion under heavy 
+loads. </para>
+      <para id="id4035597">
+        <media id="id1166736638229" alt=""><image src="../../media/graphics14-ed6c.png" mime-type="image/png" height="502" width="700"/></media>
+      </para>
+      <para id="id4035632"><emphasis>Shortest seek time first (SSTF):</emphasis> 
+handle nearest request first. This can reduce arm movement and result in greater 
+overall disk efficiency, but some requests may have to wait a long time. </para>
+      <para id="id4035646">
+        <media id="id1166736638282" alt=""><image src="../../media/graphics15-2897.png" mime-type="image/png" height="512" width="713"/></media>
+      </para>
+      <para id="id4035680"><emphasis>Scan:</emphasis> like an elevator. Move arm 
+back and forth, handling requests as they are passed. This algorithm does not 
+get hung up in any one place for very long. It works well under heavy load, but 
+not as well in the middle (about 1/2 the time it will not get the shortest 
+seek). </para>
+      <para id="id4035697">
+        <media id="id1166736638336" alt=""><image src="../../media/graphics16-75a7.png" mime-type="image/png" height="521" width="688"/></media>
+      </para>
+      <para id="id4035732"><emphasis>Minor variant: C-SCAN</emphasis>, which 
+goes all the way back to front of disk when it hits the end, sort of like a 
+raster scan in a display. </para>
+      <para id="id4035746"><emphasis>LOOK algorithm.</emphasis> Like scan, but 
+reverse direction when hit the last request in the current direction. C-LOOK is 
+the circular variant of LOOK. What most systems use in practice.</para>
+    </section>
+  </content>
+</document>

@@ -1,0 +1,179 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Project 5: Multi-programming, Inter-process Communication &amp; Scheduling</title>
+  <metadata>
+  <md:content-id>m27444</md:content-id><md:title>Project 5: Multi-programming, Inter-process Communication &amp; Scheduling</md:title>
+  <md:abstract>Operation Systems
+One-month project</md:abstract>
+  <md:uuid>e3b33479-704f-44fc-82f1-62d9a47dc14b</md:uuid>
+</metadata>
+
+<content>
+    <para id="id3651416">Nachos is currently an uni-programming environment. In 
+the second project you will design and implement appropriate support for 
+multiprogramming. You will extend the system calls to handle process management 
+and inter-process communication primitives. In addition you will implement a 
+priority based scheduling and aging mechanism in nachos. You will add this to 
+the coded first project. Make sure you correct all the deficiencies in your 
+first project before starting the second project.</para>
+    <section id="id-713195574007">
+      <title>Phase 1 –Memory allocation for multiprogramming: (15%)</title>
+      <para id="id3651447">
+        <emphasis>Required Reading – </emphasis>
+      </para>
+      <list id="id3651454" list-type="bulleted">
+        <item><emphasis>Translate.h / .cc –</emphasis> Each object of this class 
+is a translation of a single virtual page to a physical page. </item>
+        <item><emphasis>Addrspace.h / .cc –</emphasis> Consists of all data 
+needed to keep track of executing user programs. The constructor allocates 
+memory/pages to processes assuming every virtual address is the same as its 
+physical address. This restricts us to running one user program at a time. In 
+this project we modify the constructor to allow multiple user programs to be run 
+concurrently.</item>
+        <item><emphasis>Progtest.cc –</emphasis> The StartProcess function 
+serves as the starting point of every thread, where the addrspace is created and 
+execution of the userprogram begins. You might have to create a similar function 
+to account for new threads that you create.</item>
+        <item><emphasis>System.h / .cc –</emphasis> All global/system objects 
+are defined here.</item>
+        <item><emphasis>Machine.h / .cc -</emphasis> emulates the part of the 
+machine that executes user programs: main memory, processor registers, etc. 
+</item>
+      </list>
+      <para id="id3651556">To implement multiprogramming we will have to alter 
+Nachos so that each process is maintained in its own system thread. We will have 
+to take care of memory allocation and de-allocation. Here are the 
+details:</para>
+      <list id="id3651567" list-type="enumerated">
+        <item>Add a case in exception handler so that non-system call exceptions 
+can finish (currentThread&gt;Finish()) the thread. This will be important, as a 
+run time exception should not cause the operating system to shut down. </item>
+        <item>Implement multiprogramming. The code we have given you is 
+restricted to running one user program at a time. You will need to make some 
+changes to addrspace.h, and addrspace.cc in order to convert the system from 
+uniprogramming to multiprogramming. You will need to:</item>
+      </list>
+      <list id="id3651599" list-type="enumerated">
+        <item>Come up with a way of allocating physical memory frames so that 
+multiple programs can be loaded into memory at once.</item>
+        <item>Provide a way of copying data to/from the kernel from/to the 
+user’s virtual address space.</item>
+        <item>Properly handling freeing address space when a user program 
+finishes.</item>
+        <item>It is very important to alter the user program loader algorithm 
+such that it handles memory in terms of pages. Currently, memory space 
+allocation assumes that a process is loaded into a contiguous section of memory. 
+Once multiprogramming is active, memory will no longer appear contiguous in 
+nature. If you do not correct the routine, it is most likely that loading 
+another user program will corrupt the operating system.</item>
+      </list>
+    </section>
+    <section id="id-611926973485">
+      <title>Phase 2 –Process Management: (35%)</title>
+      <list id="id3651659" list-type="enumerated">
+        <item>Implement the<emphasis> SpaceID Exec(char *name, int priority) 
+</emphasis>system call. Exec starts a new user program running within a new 
+system thread with the given priority. You will need to examine the 
+“StartProcess” function in progtest.cc in order to figure out how to set up user 
+space inside a system thread. Exec should return –1 on failure, else it should 
+return the “Process SpaceID” of the user level program it just created. (Note: 
+SpaceIDs can be kept track of in a similar manner to OpenFileIDs of your project 
+1, except that you will want to keep track of them outside the thread.). For 
+this phase you can simply ignore the priority.</item>
+        <item>Implement the <emphasis>int Join(SpaceID id) and void Exit(int 
+exitCode)</emphasis> system calls. Join will wait and block on a “Process 
+SpaceID” as noted in its parameter. Exit returns an exit code to whomever is 
+doing a join. The exit code is 0 if a program successfully completes, another 
+value if there is an error. The exit code parameter is set via the 
+<emphasis>exitcode</emphasis> parameter. Join returns the exit code for the 
+process it is blocking on, -1 if the join fails. A user program can only join to 
+processes that are directly created by <emphasis>the Exec system 
+call</emphasis>. You can not join to other processes or to yourself. You will 
+have to use semaphores inside your system calls to coordinate Joining and 
+Exiting user processes. Also make sure that all processes release the resources 
+they have been allocated, after they Exit.</item>
+      </list>
+    </section>
+    <section id="id-962687121695">
+      <title>Phase 3 – IPC primitives (Semaphores) (10%)</title>
+      <list id="id3665026" list-type="enumerated">
+        <item>Implement the <emphasis>int CreateSemaphore(char *name, int 
+semval)</emphasis> system call. You will have to update start.s and syscall.h to 
+add the new system call signatures. You will create a container at the system 
+level that can hold upto 10 named semaphores. The CreateSemaphore system call 
+will return 0 on success and –1 on failure. The CreateSemaphore system call will 
+fail if there are not enough free spots in the container, the name is null, or 
+the initial semaphore value is less than 0.</item>
+        <item>Implement <emphasis>int wait(char *name) and int signal(char 
+*name)</emphasis> system calls. <emphasis>Make sure you follow the wait and 
+signal as the mnemonics for these two and not down and up or P and V.</emphasis> 
+The name parameter is the name of the semaphore. Both system calls return 0 on 
+success and –1 on failure. Failure can occur if the user gives an illegal 
+semaphore name (one that has not been created).</item>
+      </list>
+    </section>
+    <section id="id-713195574008">
+      <title>Phase 4 –Priority Scheduling &amp; Simple Aging</title>
+      <para id="id3665118"><emphasis>Required Reading – </emphasis></para>
+      <list id="id3665122" list-type="bulleted"><item><emphasis>Thread.h / .cc</emphasis> – The thread class has methods like Yield, Sleep, 
+Finish to manage the scheduling of threads. Understand of this class is 
+essential to proceed.</item>
+        <item><emphasis>List.h /.cc</emphasis> – Implementation of a Generic Linked List. Understand 
+the importance of the methods of this class clearly especially the SortedRemove 
+&amp; SortedInsert. The ready queue maintained by the scheduler is an object of 
+this type.</item>
+        <item><emphasis>Scheduler.h / .cc</emphasis> – Implementation of the nachos thread scheduler 
+&amp; dispatcher. You will have to make the majority of your changes in this 
+class.</item>
+      </list>
+      <para id="id3665177">In this phase you will be implementing a policy that 
+schedules threads depending upon the priority that you set for threads using the 
+Exec(char * name, int priority) syscall. The details are as follows - </para>
+      <list id="id3665188" list-type="bulleted"><item>Modify the thread scheduler to always return highest priority 
+thread. You will have to create another parameter in the Thread class– the 
+priority level of the thread represented by an integer value. The range of 
+thread priorities can be found in thread.h. Provide the appropriate tests in 
+order to demonstrate the success of your priority scheduling system. 
+<emphasis>Note:</emphasis> Enabling the –rs option for the test programs causes a thread to stop for context switching Yield the CPU to another thread (that could have lower 
+priority) after a given time slice. You might want to have a look at the Thread: 
+:Yield() method to take care of this.<emphasis> (7%)</emphasis></item>
+      </list>
+      <list id="id3665240" list-type="bulleted">
+        <item>Most priority scheduling solutions will starve out a low priority 
+thread. After you complete and test the above part, implement a simple aging 
+system to take care of the starvation problem. Under this policy the priority of 
+a thread decreases one unit for every x times the thread is run. That is for 
+every x thread switches from ready to run, decrement the priority of the high 
+priority threads by 1. Specify x as a constant in your system, with the value -1 
+indicating that aging is disabled. Add thread (“t”) debug statements to display 
+the trace of the aging algorithm. Provide the appropriate tests in order to 
+demonstrate the success of your aging system.<emphasis> (9%)</emphasis></item>
+      </list>
+    </section>
+    <section id="id-333720308766">
+      <title>Phase 5 –Putting it all together</title>
+      <list id="id3665304" list-type="enumerated">
+        <item>Implement a simple shell program to test your new system calls 
+implemented as above. The shell should take a command at a time, and run the 
+appropriate user program. The shell should “Join” on each program “Exec”ed, 
+waiting for the program to exit. On return from the Join, print the exit code if 
+it is anything other than 0 (normal execution). Also, design the shell such that 
+it can run program in the background. Any command starting with character 
+(&amp;) should run in the background. (Ex: &amp;create will run the test program 
+create program in the background.)<emphasis> (6%)</emphasis></item>
+        <item>Solve the Dining Philosopher problem discussed in your text book. 
+Use Semaphore you designed for realizing mutual exclusion and synchronization 
+among the philosophers. <emphasis>(8%)</emphasis></item>
+      </list>
+      <para id="id3665370">Documentation - Includes internal documentation, and 
+external documentation as described:</para>
+      <list id="id3665378" list-type="bulleted">
+        <item>How did you maintain a list of all processes in the system? What 
+other data structures did you require? <emphasis>(3%)</emphasis></item>
+        <item>Explain the significance of the Join &amp; Exit system calls. How 
+did you synchronize the 2 syscalls?<emphasis> (4%)</emphasis></item>
+        <item>What changes did you make to implement Phase 4, and why?  
+<emphasis>(3%)</emphasis></item>
+      </list>
+    </section>
+  </content>
+</document>

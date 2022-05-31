@@ -1,0 +1,222 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Review question: Memory management</title>
+  <metadata>
+  <md:content-id>m28000</md:content-id><md:title>Review question: Memory management</md:title>
+  <md:abstract>Review question of Memory management</md:abstract>
+  <md:uuid>e323d3d1-1530-4df3-8d81-8a8e96617f7c</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-276549899954">
+      <title>Why does fixed partitioning suffer from internal fragmentation whereas dynamic partitioning suffers from external fragmentation? When is compaction needed?</title>
+      <para id="id4202198">      Fixed partitioning suffers from internal fragmentation because some processes may use less memory than the fixed partition size. Dynamic partitioning suffers from external fragmentation because the memory "holes" left between two partitions may be too small for another process to use. Compaction is used in a system with dynamic partitioning to place all of the partitions in a contiguous range of memory. The effect of this is to combine all the small holes into one larger hole.</para>
+    </section>
+    <section id="id-548139818906">
+      <title>What improvements does paging make relative to fixed partitioning?</title>
+      <para id="id4202227">With paging, a process is divided into a large number of small, fixed size pages. These pages are then placed into frames of main memory, each of which is the size of a page. The main improvement over fixed partitioning is that the pages of the process do not need to be contiguous in main memory. In addition, internal fragmentation is reduced because there is only fragmentation on the last page of the process and the pages are small. The cost of these improvements is the overhead of needing a page table for each process.</para>
+    </section>
+    <section id="id-673594910066">
+      <title>How is a logical address translated into a physical address on a system that uses pure paging? How is the translation done for a system that uses pure segmentation?</title>
+      <para id="id4202249">In a system that uses pure paging, the logical address is divided into a page number and an offset. The page number is used as an index into the page table for the running process; the corresponding entry contains the frame number that the page is mapped to. The offset is added to the frame number to form a physical address.</para>
+      <para id="id4202258"> </para>
+      <para id="id4202263">      In a system that uses pure segmentation, the logical address is divided into a segment number and an offset. The segment number is used as an index into the segment table for the running process; the corresponding entry contains a segment base and length. The segment base is the beginning of the segment of memory that the process is mapped into and the length gives the length of this segment. If the offset is greater than the segment length, a segmentation error occurs. Otherwise, the offset is added to the segment base to form a physical address.</para>
+    </section>
+    <section id="id-915436886724">
+      <title>Why is locality of reference so important for a virtual memory system?</title>
+      <para id="id4202294">Locality is important because a virtual memory system keeps only a small subset of a process image in memory at any given time. If locality holds, then many memory references will refer to this subset and the process will be able to run normally. However, if locality doesn't hold, then memory references will not map to a valid physical address. When this happens, a memory fault occurs and the missing data will need to be loaded from secondary storage. The process will run slowly because secondary storage is much slower than main memory.</para>
+      <para id="id4202308"> </para>
+    </section>
+    <section id="id-835386630687">
+      <title>When does a page fault occur? Describe what the operating system does to handle a page fault.</title>
+      <para id="id4202321">A page fault occurs when a reference is mapped to a page that is not currently in main memory. When this happens, the process is suspended and the operating system takes control. If main memory is full, then a page must be replaced. Once an empty frame is found, the operating system schedules an I/O operation to bring in the page. After the page is brought in, and the page table updated, the process can be started again.</para>
+      <para id="id4202333"> </para>
+    </section>
+    <section id="id-56055894232">
+      <title>What is thrashing and how can an operating system take steps to avoid it?</title>
+      <para id="id4202346"> </para>
+      <para id="id4202350">      Thrashing occurs when a system spends more time swapping than running a process. The operating system can avoid thrashing by reducing the number of processes that are in memory, i.e. by swapping some out.</para>
+      <para id="id4202358"> </para>
+    </section>
+    <section id="id-00492481468087">
+      <title>What are the advantages of having a fixed or a variable resident set? For both of these methods of sizing the resident set, explain what it means to have a global or a local replacement policy.</title>
+      <para id="id4202373"> </para>
+      <para id="id4202377">      The advantage of having a fixed resident set means that no other process can take frames away from you. However, this has to take into account the maximum need of a process and so it may waste memory. The advantage of having a dynamic resident set means the number of frames dedicated to a process can grow or shrink over time, more closely matching its needs. Of course, there is more overhead involved with this approach.</para>
+      <para id="id4202396"> </para>
+      <para id="id4202401">      A fixed size resident set implies a local replacement policy. Any time a process needs a new page, one of its own pages must be replaced.</para>
+      <para id="id4202407"> </para>
+      <para id="id4202412">      Having a variable resident set allows the operating system to do either local or global replacement. Doing local replacement means that the process always replaces one of its own frames and the resident set size can be increased or decreased separately by the operating system. Doing global replacement means the process can automatically increase its resident set by choosing to replace someone else's page with its own. It may also have its resident set decreased when someone else chooses one of its pages.</para>
+    </section>
+    <section id="id-0841430446931">
+      <title>What is the advantage of precleaning versus demand cleaning?</title>
+      <para id="id4202442"> </para>
+      <para id="id4202446">      Precleaning may decrease the page fault rate if the operating system is able to bring in pages in advance of them being used by a process. This may be particularly effective at the time the process is first loaded.</para>
+      <para id="id4202454"> </para>
+      <para id="id4202459"> </para>
+      <para id="id4202463"> </para>
+      <para id="id4202468">Problems </para>
+      <para id="id4202472"> </para>
+    </section>
+    <section id="id-409005343376">
+      <title>A dynamic partitioning scheme is being used, and the following is the memory configuration at a given point in time:</title>
+      <para id="id4202486"> <media id="id1171742912991" alt=""><image src="../../media/graphics1-9304.png" mime-type="image/png" height="45" width="521"/></media></para>
+      <para id="id4202520"> </para>
+      <para id="id4202525">      The shaded areas are allocated blocks; the white areas are free blocks. The next three memory requests are for 40M, 20M, and 10M. Indicate the starting address for each of the three blocks using the indicated placement algorithms:</para>
+      <para id="id4202533"> </para>
+      <para id="id4202538">         1. First-fit</para>
+      <para id="id4202542">     * The 40 M block fits into the second hole, with a starting address of 80M.</para>
+      <para id="id4202547">                * The 20M block fits into the first hole, with a starting address of 20M.</para>
+      <para id="id4202553">                * The 10M block is placed at location 120M.</para>
+      <para id="id4202559"> </para>
+      <para id="id4202563">         2. Best-fit</para>
+      <para id="id4202567"> The three starting addresses are 230M, 20M, and 160M, for the 40M, 20M, and 10M blocks, respectively.</para>
+      <para id="id4202573"> </para>
+      <para id="id4202578">3. Next-fit. Assume the most recently added block is at the beginning of memory.</para>
+      <para id="id4202583">The three starting addresses are 80M, 120M, and 160M, for the 40M, 20M, and 10M blocks, respectively.</para>
+      <para id="id4202589"> </para>
+      <para id="id4202594">         4. Worst-fit</para>
+      <para id="id4202598"> The three starting addresses are 80M, 230M, and 360M, for the 40M, 20M, and 10M blocks, respectively.</para>
+      <para id="id4202604"> </para>
+    </section>
+    <section id="id-537737846662">
+      <title>A 1-Mbyte block of memory is allocated using the buddy system.</title>
+      <para id="id4202617">a.       Show the results of the following sequence in a figure similar to Figure 7.6: Request 70; Request 35; Request 80; Return A; Request 60; Return B; Return D; Return C.</para>
+      <para id="id4202627"> <figure id="id4202635"><media id="id1171742442882" alt=""><image src="../../media/graphics2-4129.png" mime-type="image/png" height="191" width="600"/></media></figure></para>
+      <para id="id4202659">b.      2. Show the binary tree representation following Return B.</para>
+      <para id="id4202665"> </para>
+      <para id="id4202670">          <figure id="id4202678"><media id="id1171740619432" alt=""><image src="../../media/graphics3-ad44.png" mime-type="image/png" height="416" width="625"/></media></figure></para>
+      <para id="id4202702"> </para>
+      <para id="id4198023"> </para>
+    </section>
+    <section id="id-215125027487">
+      <title>Consider a buddy system in which a particular block under the current allocation has an address of 011011110000.</title>
+      <para id="id4198037"> </para>
+      <para id="id4198042">a.       If the block is of size 4, what is the binary address of its buddy?</para>
+      <para id="id4198049">            If the block is of size 4, the binary address of its buddy is 011011110100</para>
+      <para id="id4198054"> </para>
+      <para id="id4198059">b.      2. If the block is of size 16, what is the binary address of its buddy?</para>
+      <para id="id4198066">If the block is of size 16, the binary address of its buddy is 011011100000.</para>
+      <para id="id4198072"> </para>
+    </section>
+    <section id="id-132649763625">
+      <title>Consider a simple paging system with the following parameters: 232 bytes of physical memory; page size of 210 bytes; 216 pages of logical address space.</title>
+      <para id="id4198086"> </para>
+      <para id="id4198090">a.       How many bits are in a logical address?</para>
+      <para id="id4198096">The number of bytes in the logical address space is (216 pages) * (210 bytes/page) = 226 bytes. Therefore, 26 bits are required for the logical address.</para>
+      <para id="id4198131"> </para>
+      <para id="id4198135">b.      How many bytes in a frame?</para>
+      <para id="id4198141">A frame is the same size as a page, 210 bytes.</para>
+      <para id="id4198157"> </para>
+      <para id="id4198161">c.       How many bits in the physical address specify the frame?</para>
+      <para id="id4198168">The number of frames in main memory is (232 bytes of main memory)/(210 bytes/frame) = 222 frames. So 22 bits is needed to specify the frame.</para>
+      <para id="id4198186">d.      How many entries in the page table?</para>
+      <para id="id4198191">There is one entry for each page in the logical address space. Therefore there are 216 entries.</para>
+      <para id="id4198197"> </para>
+      <para id="id4198202">e.       How many bits in each page table entry? Assume each page table entry includes a valid/invalid bit.</para>
+      <para id="id4198210">In addition to the valid/invalid bit, 22 bits are needed to specify the frame location in main memory, for a total of 23 bits.</para>
+      <para id="id4198216"> </para>
+    </section>
+    <section id="id-0312298052857">
+      <title>Consider a paged virtual memory system with 32-bit virtual addresses and 1KB pages. Each page table entry requires 32 bits. It is desired to limit the page table size to one page.</title>
+      <para id="id4198231">a.       How many levels of page tables are required?</para>
+      <para id="id4198237">Virtual memory can hold (232 bytes of main memory)/( 210 bytes/page) = 222 pages, so 22 bits are needed to specify a page in virtual memory. Each page table contains (210 bytes per page table)/(4 bytes/entry) = 28 entries. Thus, each page table can handle 8 of the required 22 bits. Therefore, 3 levels of page tables are needed.</para>
+      <para id="id4198291"> </para>
+      <para id="id4198295">b.      What is the size of the page table at each level? Hint: One page table size is smaller.</para>
+      <para id="id4198303">Tables at two of the levels have 28 entries; tables at one level have 26 entries. (8 + 8 + 6 = 22).</para>
+      <para id="id4198327"> </para>
+      <para id="id4198332">c.       The smaller page size could be used at the top level or the bottom level of the page table hierarchy. Which strategy consumes the least number of pages?</para>
+      <para id="id4198342"> Less space is consumed if the top level has 26 entries. In that case, the second level has 26 pages with 28 entries each, and the bottom level has 214 pages with 28 entries each, for a total of 1 + 26 + 214 pages = 16,449 pages. If the middle level has 26 entries, then the number of pages is 1 + 28 + 214 pages = 16,641 pages. If the bottom level has 26 entries, then the number of tables is 1 + 28 + 216 pages = 65,973 pages.</para>
+      <para id="id4198463"> </para>
+    </section>
+    <section id="id-202540874793">
+      <title>A process has four page frames allocated to it. (All the following numbers are decimal, and everything is numbered starting from zero.) The time of the last loading of a page into each page frame, the last access to the page in each page frame, the virtual page number in each page frame, and the referenced (R) and modified (M) bits for each page frame are as shown (the times are in clock ticks from the process start at time 0 to the event -- not the number o fticks since the event to the present).</title>
+      <para id="id4198483">      Virtual Page Number          Page Frame      Time Loaded    Time Referenced          R Bit    M Bit</para>
+      <para id="id4198489">      2    0          60        161      0          1</para>
+      <para id="id4198495">      1    1          130      160      1          0</para>
+      <para id="id4198501">      0    2          26        162      1          0</para>
+      <para id="id4198507">      3    3          20        163      1          1</para>
+      <para id="id4198512"> </para>
+      <para id="id4198517">      A page fault to virtual page 4 has occured at time 164. Which page frame will have its contents replaced for each of the following memory management policies? Explain why in each case.</para>
+      <para id="id4198524"> </para>
+      <para id="id4198529">a.       FIFO (first-in-first-out)</para>
+      <para id="id4198534">            Frame 3 since it was loaded the longest ago at time 20.</para>
+      <para id="id4198540"> </para>
+      <para id="id4198544">b.      LRU (least recently used)</para>
+      <para id="id4198550">            Frame 1 since it was referenced the longest ago at time 160.</para>
+      <para id="id4198555"> </para>
+      <para id="id4198560">c.       Clock</para>
+      <para id="id4198565">            Clear R in Frame 3 (oldest loaded), clear R in Frame 2 (next oldest loaded), victim Frame is 0 since R=0.</para>
+      <para id="id4198571"> </para>
+      <para id="id4198576">d.      Optimal (Use the following reference string.)</para>
+      <para id="id4198582">            Replace the page in Frame 3 since the virtual page number 3 (in Frame 3) is used furthest in the future.</para>
+      <para id="id4198588"> </para>
+      <para id="id4198593">e.       Given the aforementioned state of memory just before the page fault, consider the following virtual page reference string: 4,0,0,0,2,4,2,1,0,3,2. How many page faults would occur if the working set policy with LRU were used with a window size of 4 instead of a fixed allocation? Show clearly where each fault would occur.</para>
+      <para id="id4198607"> </para>
+      <para id="id4198611">            There are 6 faults, indicated by *:</para>
+      <para id="id4198617">            (Window) - {working set}</para>
+      <para id="id4198622">            -----------------------</para>
+      <para id="id4198627">            (1 2 0 3) - {2 1 0 3} </para>
+      <para id="id4198632">            (2 0 3 4) - {2 0 3 4}*</para>
+      <para id="id4198637">            (0 3 4 0) - {0 3 4}</para>
+      <para id="id4198641">            (3 4 0 0) - {0 3 4}</para>
+      <para id="id4198645">            (4 0 0 0) - {0 4}</para>
+      <para id="id4198649">            (0 0 0 2) - {0 2}*</para>
+      <para id="id4198653">            (0 0 2 4) - {0 2 4}*</para>
+      <para id="id4198658">            (0 2 4 2) - {0 2 4} </para>
+      <para id="id4198663">            (2 4 2 1) - {2 4 1}*</para>
+      <para id="id4198668">            (4 2 1 0) - {2 4 1 0}*</para>
+      <para id="id4198673">            (2 1 0 3) - {2 1 0 3}*</para>
+      <para id="id4198678">            (1 0 3 2) - {2 1 0 3}</para>
+      <para id="id4198683"> </para>
+    </section>
+    <section id="id-251427500936">
+      <title>Consider a system with memory mapping done on a page basis and usin ga single-level page table. Assume that hte necessary page table is always in memory.</title>
+      <para id="id4198698"> </para>
+      <para id="id4198702">a.       If a memory reference takes 200 ns, how long does a paged memory reference take?</para>
+      <para id="id4198710">400 nanoseconds. 200 to get the page table entry, and 200 to access the memory location</para>
+      <para id="id4198715">.</para>
+      <para id="id4198720">b.      Now we add an MMU that imposes an overhead of 20 ns on a hit or a miss. If we assume that 85% of all memory references hit in the MMU TLB, what is the Effective Memory Access Time (EMAT)?</para>
+      <para id="id4198730">There are two cases. First, when the TLB contains the entry required, we have 20 ns overhead on top of the 200 ns memory access time. Second, when the TLB does not contain the item, we have an additional 200 ns to get the required entry into the TLB:</para>
+      <para id="id4198739">            (220 * 0.85) + (420 * 0.15) = 250 ns</para>
+      <para id="id4198744"> </para>
+      <para id="id4198748">c.       Explain how the TLB hit rate affects the EMAT.</para>
+      <para id="id4198755">The higher the TLB hit rate is, the smaller the EMAT is, because the additional 200 ns penalty to get the entry into the TLB contributes less to the EMAT.</para>
+      <para id="id4198762"> </para>
+    </section>
+    <section id="id-958081080277">
+      <title>Assume that a task is divided into four equal-sized segments and that the system builds an eight-entry page descriptor table for each segment. Thus, the system has a combination of segmentation and paging. Assume also that the page size is 2 Kbytes.</title>
+      <para id="id4198778"> </para>
+      <para id="id4198782">a.       What is the maximum size of each segment?</para>
+      <para id="id4198788">            (8 entries in the page table) x 2K = 16K.</para>
+      <para id="id4198793"> </para>
+      <para id="id4198798">b.      What is the maximum logical address space for the task?</para>
+      <para id="id4198804">            (16 K) x 4 segments per task = 64K.</para>
+      <para id="id4198810"> </para>
+      <para id="id4198814">c.       Assume that an element in physical location 00021ABC is accessed by this task. What is the format of the logical address that the task generates for it? What is the maximum physical address space for the system?</para>
+      <para id="id4198826">We know the offset is 11 bits since the page size is 2K. The page table for each segment has eight entries, so it needs 3 bits. That leaves 2 bits for the segment number. So the format of the address is 2 bits for segment number, 3 bits for page number, and 11 bits for offset.</para>
+      <para id="id4198835"> </para>
+      <para id="id4198839"> The physical address is 32 bits wide total, so the frame number must be 21 bits wide. Thus 00021ABC is represented in binary as:</para>
+      <para id="id4198846"> </para>
+      <para id="id4198850">            Frame                           Offset</para>
+      <para id="id4198856">            0000 0000 0000 0010 0001 1 | 010 1011 1100</para>
+      <para id="id4198861"> </para>
+      <para id="id4198865">            The maximum physical address space is 232 = 4 GB.</para>
+      <para id="id4198871"> </para>
+      <para id="id4198875"> Note that the virtual address space is only 16 bits wide: 11 for the offset, 3 for the page number, and 2 for the segment number. This means a process cannot logically address the entire 4GB space ... it is limited to only 64K.</para>
+      <para id="id4198883"> </para>
+    </section>
+    <section id="id-0712024965321">
+      <title>Assume that we have a demand-paged memory with the page table held in registers. It takes 8 milliseconds to service a page fault if an empty frame is available or if the replaced page is not modified, and 20 milliseconds if the replaced page is modified. Assume the page to be replaced is modified 70 percent of the time. Memory access time is 100 nanoseconds.</title>
+      <para id="id4198901"> </para>
+      <para id="id4198906">      What is the maximum acceptable page-fault rate if we want the system to have an effective memory access time of 200 nanoseconds?</para>
+      <para id="id4198912"> </para>
+      <para id="id4198917">      EMAT = 200ns = X(100ns) + (1-X)(.70(20ms + 100ns) + .3(8ms + 100ns))</para>
+      <para id="id4198922">           = 100X + (1-X)(16.4ms)</para>
+      <para id="id4198927">           = 100X - 16,400,000X + 16,400,000</para>
+      <para id="id4198932"> </para>
+      <para id="id4198937">      X = 16399800/163999000 </para>
+      <para id="id4198941">        = .9999939024</para>
+      <para id="id4198945"> </para>
+      <para id="id4198949">      Therefore the maximum acceptable page-fault rate is (1-X) = .00061%.</para>
+    </section>
+  </content>
+</document>

@@ -1,0 +1,71 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Project 4: Emand Paging</title>
+  <metadata>
+  <md:content-id>m27454</md:content-id><md:title>Project 4: Emand Paging</md:title>
+  <md:abstract>Operating Systems	
+One-month project</md:abstract>
+  <md:uuid>82e43b1a-e85e-4f3e-ac39-ce9ce1db910e</md:uuid>
+</metadata>
+
+<content>
+    <para id="id3568212">The third Nachos project is to build a demand paging system. You will create the mechanisms and policies for a demand paging system with a simple page table system. You will also implement a simple page replacement algorithm.</para>
+    <section id="id-956189511522">
+      <title>Phase 1: Understand the Code</title>
+      <para id="id3568234">You will modify the set of files that you have after completion of<emphasis> projects 1.</emphasis> It is important that you understand how the demand paging and address translation system in Nachos works. To this end, we suggest that you examine the following files:</para>
+      <para id="id3568256"><emphasis>machine.* : We</emphasis> will not use TLB. We will compile in the vm directory to make use of the </para>
+      <para id="id3568271">dependency setting stated in the Makefile there. Remove USE_TLB flag from the lines stating the various components used.</para>
+      <para id="id3568285"><emphasis>translate.*</emphasis> : Examine the ReadMem, WriteMem, and Translate methods of machine. It is important to understand how a PageFaultException is generated for a page miss. Pay particular attention to where the invalid virtual address is stored when the exception occurs, since you will need to access it later.</para>
+      <para id="id3568310"><emphasis>addrspace.*</emphasis> : The role of address space will change, but it is now important to understand what ALL of the methods do, not just the constructor or deconstructor.</para>
+      <para id="id3568325"><emphasis>exception.cc</emphasis> : The majority of your demand paging code will be called from the PageFaultException handler.</para>
+      <para id="id3568342"><emphasis>bitmap.*</emphasis> : routines for manipulating bitmaps </para>
+      <para id="id3568355">
+        <emphasis>filesys.h</emphasis>
+      </para>
+      <para id="id3568362"><emphasis>openfile.h</emphasis> : Pay careful attention to the readAt and writeAt methods!</para>
+      <para id="id3568376"><emphasis>../test/*</emphasis> : C programs that will be cross-compiled to MIPS and run in Nachos</para>
+    </section>
+    <section id="id-638446888998">
+      <title>Phase 2 : Design Considerations</title>
+      <para id="id3568400">When the machine object is instantiated, the pagetable will be initialized with all entries invalid. This will generate a page fault when the first memory address is accessed. The majority of your design will deal with what happens when a page fault occurs.</para>
+      <para id="id3568414">In order to implement full demand paging, you will also be required to create and modify several other data structures. Such data structures include:</para>
+      <list id="id3568423" list-type="bulleted">
+        <item>Modification of the TranslationEntry data structure to support a reference word.</item>
+        <item>A method for determining the source and destination expression for the page to be loaded, from a file to the main memory.</item>
+      </list>
+      <para id="id3568440">You will also have to account for all phases of the demand paging algorithm. These phases include:</para>
+      <list id="id3568448" list-type="bulleted">
+        <item>Page Table Hit</item>
+      </list>
+      <list id="id3568456" list-type="bulleted">
+        <item>Page Table Miss, free entry in the main memory</item>
+        <item>Page Table Miss, page replacement in the main memory, replacement page clean, and</item>
+        <item>Page Table Miss, page replacement in the main memory, replacement entry dirty.</item>
+      </list>
+      <para id="id3568488">You should also make sure that you separate the mechanisms and policies. Initially you will use FIFO policy for replacement. After testing pagefault handler with FIFO, replace it with LRU page replacement algorithm.</para>
+    </section>
+    <section id="id-103509096455">
+      <title>Phase 3: [90%] Lab 3 Assignment</title>
+      <section id="id-887452472907">
+        <title>NOTE: It is very important to compile this project in the VM directory! Your files will be in userprog.</title>
+        <list id="id3568520" list-type="bulleted">
+          <item><emphasis>Understand Page Tables –</emphasis> This is very important, but will not count towards your grade.</item>
+          <item><emphasis>Change Constants in machine.h –</emphasis> Please change the constants in machine.h to the following:NumPhysPages32 </item>
+          <item><emphasis>Change class TranslationEntry in translate.h –</emphasis> Add ‘int refword’ as an instance variable to this class (under the dirty bit)</item>
+          <item><emphasis>Moving pages in and out of main memory:</emphasis> A critical step in the demand paging in rolling pages needed from an executable file into the main memory and rolling out dirty pages back to the file. It is suggested that you write a helper class that will exclusively focus on these operations. For more information on the code look at address space constructor.</item>
+          <item><emphasis>Data structure for the Page Table –</emphasis> Base the design of the page table on the TranslationEntry class. You may need to add an extra entry for page replacement policy.</item>
+          <item><emphasis>Implement FIFO Page Table Demand Paging –</emphasis> You must now process all PageFaultExpections, and implement the core demand paging algorithm. After complete testing use LRU method.</item>
+          <item>Design three user programs that can be run inside the shell to demonstrate the robustness of your overall project solution. </item>
+        </list>
+      </section>
+    </section>
+    <section id="id-551849746196">
+      <title>Phase 4: [10%] Documentation</title>
+      <para id="id3568682">Answer the following questions in brief:</para>
+      <para id="id3568686">1. Describe the steps that occur during a Page Fault Exception when: (6)      a. There are free pages in the main memory</para>
+      <para id="id3568703">      b. There are NO free pages in the main memory &amp; dirty bit for the replacement page is NOT set.</para>
+      <para id="id3568712">      c. There are NO free pages in the main memory &amp; dirty bit for the replacement page is SET.</para>
+      <para id="id3568721">2. Give an example of LRU &amp; FIFO policies.(2)</para>
+      <para id="id3568738">3. Where exactly have you updated the reference count for the 2 policies &amp; why specifically in these places? (Just give the function names &amp; the reason)  (2)</para>
+    </section>
+  </content>
+</document>

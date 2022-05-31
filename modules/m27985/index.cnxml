@@ -1,0 +1,15 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Reading List</title>
+  <metadata>
+  <md:content-id>m27985</md:content-id><md:title>Reading List</md:title>
+  <md:abstract/>
+  <md:uuid>1119ef61-6697-414f-bb1b-b325545cf2e6</md:uuid>
+</metadata>
+
+<content>
+    <list id="id19933476" list-type="enumerated"><item><emphasis>1. Operating Systems: Design and Implementation (Second Edition), ISBN-10:</emphasis> 0136386776, by <link url="http://www.amazon.com/exec/obidos/search-handle-url?%5Fencoding=UTF8&amp;search-type=ss&amp;index=books&amp;field-author=Andrew%20S.%20Tanenbaum">Andrew S. Tanenbaum</link> (Author), <link url="http://www.amazon.com/exec/obidos/search-handle-url?%5Fencoding=UTF8&amp;search-type=ss&amp;index=books&amp;field-author=Albert%20S.%20Woodhull">Albert S. Woodhull</link> (Author)</item>
+      <item><emphasis>2. Applied Operating System Concepts, ISBN-10:</emphasis> 0471365084, by <link url="http://www.amazon.com/exec/obidos/search-handle-url?%5Fencoding=UTF8&amp;search-type=ss&amp;index=books&amp;field-author=Abraham%20Silberschatz">Abraham Silberschatz</link> (Author), <link url="http://www.amazon.com/exec/obidos/search-handle-url?%5Fencoding=UTF8&amp;search-type=ss&amp;index=books&amp;field-author=Peter%20Baer%20Galvin">Peter Baer Galvin</link> (Author), <link url="http://www.amazon.com/exec/obidos/search-handle-url?%5Fencoding=UTF8&amp;search-type=ss&amp;index=books&amp;field-author=Peter%20Galvin">Peter Galvin</link> (Author), <link url="http://www.amazon.com/exec/obidos/search-handle-url?%5Fencoding=UTF8&amp;search-type=ss&amp;index=books&amp;field-author=Avi%20Silberschatz">Avi Silberschatz</link> (Author)</item>
+      <item><emphasis>3. Modern Operating Systems (2nd Edition), ISBN-10:</emphasis> 0130313580, by <link url="http://www.amazon.com/exec/obidos/search-handle-url?%5Fencoding=UTF8&amp;search-type=ss&amp;index=books&amp;field-author=Andrew%20S.%20Tanenbaum">Andrew S. Tanenbaum</link> (Author)</item>
+    </list>
+  </content>
+</document>

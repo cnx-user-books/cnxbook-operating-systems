@@ -1,0 +1,221 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Project 3: Chat Application Using Nachos Networking Module</title>
+  <metadata>
+  <md:content-id>m30811</md:content-id><md:title>Project 3: Chat Application Using Nachos Networking Module</md:title>
+  <md:abstract>Operating Systems
+One-month project</md:abstract>
+  <md:uuid>59d82311-05c9-46c4-ba07-97bbc624a90a</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-963337679408">
+      <title>Objectives: </title>
+      <list id="id3080674" list-type="bulleted"><item>Learn to work with <link resource="Nachos.zip">Nachos</link> networking for communication among processes.</item>
+        <item>Define and implement a “chat” protocol for interaction between a chat server and a chat client. </item>
+      </list>
+    </section>
+    <section id="id-337390749884">
+      <title>Problem Statement:</title>
+      <para id="id3960298">Chat rooms have become a popular way to support a forum for n-way conversation or discussion among a set of people with interest in a common topic. Chat applications range from simple, text-based ones to entire virtual worlds with exotic graphics. In this project you are required to implement a simple text-based chat client/server application.</para>
+    </section>
+    <section id="id-427845335281">
+      <title>Problem Description:</title>
+      <para id="id3900378">Email, newsgroup and messaging applications provide means for communication among people but these are one-way mechanisms and they do not provide an easy way to carry on a real-time conversation or discussion with people involved. Chat room extends the one-way messaging concept to accommodate multi-way communication among a set of people. </para>
+    </section>
+    <section id="id-972019807592">
+      <title>Nachos networking infrastructure</title>
+      <para id="id4123091">Nachos networking packages implements a very simple Unix domain (not internet domain), datagram socket. The files of importance to this project and their purpose are described below. </para>
+      <para id="id4121823">threads directory:</para>
+      <para id="id4019248">lockcond.h, lockcond.cc: for defining and implementing lock and condition synchronization primitives; needed for network applications to work.</para>
+      <para id="id4095000">machine directory:</para>
+      <para id="id4095004">network.h, network.cc: Data structures to emulate a physical network connection. The network provides the abstraction of ordered, unreliable, fixed-size packet delivery to other machines on the network.You may note that the interface to the network is similar to the console device -- both are full duplex channels. </para>
+      <para id="id4456728">sysdep.h, sysdep.cc : Interprocess communication operations, for simulating the network; Unix sockets creation, binding, closing etc. are called here to provide nachos socket functionality. </para>
+      <para id="id4184997">network directory:</para>
+      <para id="id3894828">post.h, post.cc: postoffice and mailbox, mail message definition and implementation. </para>
+      <para id="id3991957">nettest.cc: application to test communication between host id 0 and host id 1 (these are hardcoded!)</para>
+    </section>
+    <section id="id-879433176299">
+      <title>Chat Architecture:</title>
+      <para id="id3932167">A chat application consists of a Chat Client (CC) one per person, a Chat Server (CS) and a two-way communication pipeline between the client and the server to send and receive conversational, control and status messages.</para>
+      <figure id="id3957649">
+        <media id="id7815089" alt=""><image src="../../media/graphics1-d876.png" mime-type="image/png" height="305" width="506"/></media>
+      </figure>
+      <list id="id3685338" list-type="bulleted">
+        <item>Chat Client:</item>
+      </list>
+      <para id="id3685341">Typical features of a CC include: (i) select chat server (server id), (ii) select a nickname for interaction and (iii) ability to set and change user preferences such as number of messages displayed, change nickname, etc. You may design your own chat user interface. </para>
+      <para id="id4137166">Implementation notes:</para>
+      <para id="id4386226">The server id is specified at command line (nachos –rs 1234 –m selfid –o serverid ) while executing the nachos process representing the client.</para>
+      <para id="id3981376">Once the client process is running it could interactively ask the user for the nickname of the chat user and update this information locally and if needed by your design on the server.</para>
+      <list id="id4020112" list-type="bulleted">
+        <item>Chat Server:</item>
+      </list>
+      <para id="id4044619">A chat server supports the set of clients for a room, by maintaining client handle (clientid in nachos –rs –m clientId –o serverid), and client name. Server also has a message interpreter that parses the message received from a client and delegates the command to the appropriate module. Sample architecture for the chat application is shown in Figure 2. You may change the architecture to suit your design.</para>
+      <figure id="id3471931">
+        <media id="id1171067458301" alt=""><image src="../../media/graphics2-d9f8.png" mime-type="image/png" height="391" width="600"/></media>
+      </figure>
+      <para id="id3536327">The Chat client receives the user messages and user configuration, sets up commands and passes them to the server. Sometimes it is also possible to process some of the commands (Ex: Number of messages displayed) locally. MsgProcessor in Figure 2 Chat Client is responsible for interpreting messages from the user. Sender and receiver are for communicating with the server. Messages are constructed as described in the protocol below.</para>
+      <para id="id4383641">A chat server receives the commands and messages from the chat clients and processes them. MsgInterpreter is for unpacking, parsing and delegating the commands to the appropriate units on the server side. MsgMaker constructs the messages to be sent back according to the protocol described below.</para>
+      <para id="id3977509">We will use nachos sockets for communication between the server and the client.</para>
+      <para id="id4016961">Chat Protocol:</para>
+      <para id="id4016965">Protocols such as TCP and HTTP provide rules for communication. They specify details of message formats; they describe how an application responds when a message arrives, and how to handle abnormal and error conditions. We describe the protocol we will use for the chat service in Section 8.</para>
+    </section>
+    <section id="id-697951395962">
+      <title>Implementation Details</title>
+      <para id="id4244809">Phase 1: Study all the codes associated with the nachos networking.</para>
+      <para id="id3954893">Phase 2: Perquisites: Lock and Condition: (15%) Implement the lock and condition the skeleton for which are in threads directory. Test it. Run the nettest application in network directory by opening up two xterms/terminals and running two nachos processes (network id 0, 1) communicating with each other.</para>
+      <para id="id4095134">Implement lock and condition.</para>
+      <para id="id3087326">Go into network directory, gmake</para>
+      <para id="id3087330">Run nachos on two xterm/terminals using these commands: </para>
+      <para id="id4161767">nachos –rs 1234 –m 0 –o 1</para>
+      <para id="id3314177">nachos –rs 1234 –m 1 –o 0</para>
+      <para id="id3992079">You will observe the two processes sending messages and acknowledging.</para>
+      <para id="id3918336">Phase 3: Ring Network: (5%) Update the nettest.cc so that a set of nachos process with network ids (0, 1,2,3..) can communicate. To test this form a ring of at least three nachos processes representing three network nodes, node 0 sends message to node 1, node 1 receives and transmits the same message to node 2 and node 2 receives and transmits the message back to node 0 thus successfully completing a trip around the ring.</para>
+      <para id="id4254342">Phase 4: (45%) Chat Server: Implement the chat server that behaves according to the protocol described in Section 8. Test it with dummy data/hard coded data.</para>
+      <para id="id3315216">Phase 5: (25%) Chat Client and Integration with Server: Implement the chat client and a simple text interface and integrate it with the server.</para>
+      <para id="id4295086">Phase 6: (10%) Documentation:</para>
+      <para id="id4215638">This includes internal documentation (comments) and a BRIEF, BUT COMPLETE external document (read as: paper) describing what you did to the code and why you made your choices. DO NOT PARAPHRASE THIS LAB DESCRIPTION AND DO NOT TURN IN A PRINTOUT OF YOUR CODE AS THE EXTERNAL DOCUMENTATION.</para>
+    </section>
+    <section id="id-116964282282">
+      <title>Deliverables and grading</title>
+      <para id="id3839411">When you complete your project, remove all executables and object files. If you want me to read a message with your code, create a README.NOW file and place it in the nachos code directory. Tar and compress the code, and submit the file using the online submission system. It is important that you follow the design guidelines presented for the system calls. I will be running my own shells and test programs against your code to determine how accurately you designed your lab, and how robust your answers are. Grading for the implementation portion will depend on how robust and how accurate your solution is. Remember, the user should not be able to do anything to corrupt the system, and system calls should trap as many error conditions as possible.</para>
+      <para id="id4146821">8. A Simple Chat Protocol</para>
+      <para id="id4034662">SERVERINFO</para>
+      <code id="id8346426" display="block">
+cmd_serverinfo {
+        byte	type	=	0;
+	byte	cmd	=	0;
+	};
+status_serverinfo {
+	byte	type	=	1;
+	byte	cmd	=	0;
+        byte	status	=	N;	// 0 = OK, 1 = FAIL
+	byte	length	=	M;	// Size of message
+	byte[]	message;
+		};
+
+	OUTPUT: [SERVER] – Copyright 2004 Your Name Here, CSE4/521
+	OUTPUT: [SERVER] – ERROR : SERVERINFO Command Failed
+
+</code><para id="id3943170">LOGIN &lt;nickname&gt;</para>
+      <code id="id1171067450452" display="block">
+cmd_login {
+	byte	type	=	0;
+	byte	cmd	=	1;
+	byte	length	=	N;
+	byte[]	nickname;
+	};
+status_login {
+	byte	type	=	1;
+	byte	cmd	=	1;
+        byte	status	=	N;	// 0 = OK, 1 =FAIL
+                                                           // 2 = Nickname in use
+                                                          // 3 = Already logged in
+
+	};
+OUTPUT: [SERVER] – User &lt;nickname&gt; logged in. 
+OUTPUT: [SERVER] – ERROR : LOGIN error.
+OUTPUT: [SERVER] – ERROR : LOGIN nickname &lt;nickname&gt; in use.
+OUTPUT: [SERVER] – ERROR : LOGIN user already logged in.
+</code><para id="id3943175">LOGOUT</para>
+      <code id="id1171069626329" display="block">
+cmd_logout {
+              byte	type	=	0;
+	      byte	cmd	=	2;
+	};
+
+status_logout {
+	byte	type	=	1;
+	byte	cmd	=	2;
+	byte	status	=	N;	// 0 = OK, 1 FAIL
+					// 2 = Not logged in
+	};
+
+	OUTPUT: [SERVER] – User &lt;nickname&gt; logged out. 
+	OUTPUT: [SERVER] – ERROR : LOGOUT error.
+	OUTPUT: [SERVER] – ERROR : User not logged in.
+</code><para id="id4230990">WHOSINROOM</para>
+      <code id="id1171076026698" display="block">
+ cmd_whoroom {
+	byte	type	=	0;
+	byte	cmd	=	3;
+	};
+
+
+status_whoroom {
+	byte	type	=	1;
+	byte	cmd	=	3;
+	byte	status	=	N;	// 0 = OK, 1 FAIL
+	};
+
+data_whoroom {
+	byte 	type	=	2;
+	byte	cmd	=	3;
+	byte	entry	=	count;   // nickname count
+	byte	pos	=	X;	// 0 = Middle, 1 = First, 2 = Last
+	byte	length	=	L;  // message length
+	byte[]  msg;		// Single message Entry
+	};
+	OUTPUT: [SERVER] – ERROR : WHOSINROOM error.
+	OUTPUT: [SERVER] – User : &lt;X&gt; NickName: &lt;nickname&gt; 
+(As many data N data message representing N nicknames will be sent)
+</code><para id="id4101433">SEND &lt;message&gt;</para>
+      <code id="id1171067311828" display="block">
+ cmd_send {
+	byte	type	=	0;
+	byte	cmd	=	4;
+	byte	length	=	N;
+	byte[]	message;
+	};
+
+status_send {
+	byte	type	=	1;
+	byte	cmd	=	4;
+	byte	status	=	N;	// 0 = OK, 1 FAIL
+					// 2 = Not in room
+};
+
+bcast_send {
+	byte 	type	=	3;
+	byte	cmd	=	4;
+	byte	length	=	N;
+	byte[]  msg;		// Single message Entry
+	};
+OUTPUT: [SERVER] – ERROR : SEND error.
+OUTPUT: [SERVER] – ERROR : SEND not in room.
+OUTPUT: [&lt;nickname&gt;] – &lt;msg&gt;
+Send message is sent from a client to the server, which then broadcasts to all the clients.
+</code><para id="id3285256">WHISPER &lt;nickname&gt; &lt;message&gt;</para>
+      <code id="id1171067535981" display="block">
+ cmd_whisper {
+	byte	type	=	0;
+	byte	cmd	=	5;
+	byte	nlength	=	M;
+	byte[]	nickname;
+	byte	length	=	N;
+	byte[]	message;
+	};
+
+status_whisper {
+	byte	type	=	1;
+	byte	cmd	=	5;
+	byte	status	=	N;	// 0 = OK, 1 FAIL
+					// 2 = Not in room
+					// 3 = nickname not found
+};
+
+bcast_whisper {
+	byte 	type	=	3;
+	byte	cmd	=	5;
+	byte	length	=	N;
+	byte[]  msg;		// Single message Entry
+	};
+OUTPUT: [SERVER] – ERROR : WHISPER error.
+OUTPUT: [SERVER] – ERROR : WHISPER not in room.
+OUTPUT: [*&lt;nickname&gt;*] – &lt;msg&gt;
+</code><para id="id3285261">QUIT</para>
+      <para id="id3943599">This command on the server side shuts the server down and cleans up all the space. (On the client side Logout command itself will terminate the server program.) </para>
+      <para id="id3440847">Important Note: You are required to follow strictly the protocol given. This will allow us to test your sever with our client during the demo for the project. Please do not implement any more commands than specified above. You may not have time to do that. I would rather prefer you spend your time to implement the commands given in section 8.</para>
+    </section>
+  </content>
+</document>

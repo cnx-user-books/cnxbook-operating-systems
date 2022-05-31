@@ -1,0 +1,967 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Memory management</title>
+  <metadata>
+  <md:content-id>m27323</md:content-id><md:title>Memory management</md:title>
+  <md:abstract>Memory Management</md:abstract>
+  <md:uuid>5705381a-c7be-4ded-a3b0-dfd192d4d3a7</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-724997433861">
+      <title>Storage Allocation</title>
+      <para id="id3998561">Information stored in memory is used in many 
+different ways. Some possible classifications are: </para>
+      <list id="id3998567" list-type="bulleted">
+        <item>Role in Programming Language: <list id="id3998576" list-type="bulleted"><item>Instructions (specify the operations to be performed and 
+the operands to use in the operations).</item><item>Variables (the information 
+that changes as the program runs: locals, owns, globals, parameters, dynamic 
+storage).</item><item>Constants (information that is used as operands, but that 
+never changes: pi for example).</item></list></item>
+        <item>Changeability: <list id="id4037394" list-type="bulleted"><item>Read-
+only: (code, constants).</item><item>Read &amp; write: (variables). 
+</item></list></item>
+      </list>
+      <para id="id4037430">Why is identifying non-changing memory useful or 
+important? </para>
+      <list id="id4037436" list-type="bulleted">
+        <item>Initialized: <list id="id4037444" list-type="bulleted"><item>Code, 
+constants, some variables: yes.</item><item>Most variables: 
+no.</item></list></item>
+        <item>Addresses vs. Data: Why is this distinction useful or important? 
+</item>
+        <item>Binding time: <list id="id4037468" list-type="bulleted"><item>Static: 
+arrangement determined once and for all, before the program starts running. May 
+happen at compile-time, link-time, or load-time. </item><item>Dynamic: 
+arrangement cannot be determined until runtime, and may change. 
+</item></list></item>
+      </list>
+      <para id="id4037511">Note that the classifications overlap: variables may 
+be static or dynamic, code may be read-only or read&amp;write, etc. </para>
+      <para id="id4037520">The compiler, linker, operating system, and run-time 
+library all must cooperate to manage this information and perform allocation. 
+</para>
+      <para id="id4037526">When a process is running, what does its memory look 
+like? It is divided up into areas of stuff that the OS treats similarly, called 
+segments. In Unix, each process has three segments: </para>
+      <list id="id4037545" list-type="bulleted">
+        <item>Code (called "text" in Unix terminology)</item>
+        <item>Initialized data</item>
+        <item>Uninitialized data</item>
+        <item>User's dynamically linked libraries (shared objects (.so) or 
+dynamically linked libraries (.dll))</item>
+        <item>Shared libraries (system dynamically linked libraries)</item>
+        <item>Mapped files</item>
+        <item>Stack(s)</item>
+      </list>
+      <para id="id4037608">
+        <media id="id1166866783931" alt=""><image src="../../media/graphics1-0a93.png" mime-type="image/png" height="569" width="327"/></media>
+      </para>
+      <para id="id4037643">In some systems, can have many different kinds of 
+segments. </para>
+      <para id="id4037648">One of the steps in creating a process is to load its 
+information into main memory, creating the necessary segments. Information comes 
+from a file that gives the size and contents of each segment (e.g. a.out in 
+Unix). The file is called an object file. See man 5 a.out for format of Unix 
+object files. </para>
+      <para id="id4037677">Division of responsibility between various portions 
+of system: </para>
+      <list id="id4037682" list-type="bulleted">
+        <item>Compiler: generates one object file for each source code file 
+containing information for that file. Information is incomplete, since each 
+source file generally uses some things defined in other source files. </item>
+        <item>Linker: combines all of the object files for one program into a 
+single object file, which is complete and self-sufficient. </item>
+        <item>Operating system: loads object files into memory, allows several 
+different processes to share memory at once, provides facilities for processes 
+to get more memory after they have started running. </item>
+        <item>Run-time library: provides dynamic allocation routines, such as 
+calloc and free in C. </item>
+      </list>
+    </section>
+    <section id="id-008117665577">
+      <title>Dynamic Memory Allocation</title>
+      <para id="id4037745">Why is not static allocation sufficient for 
+everything? Unpredictability: cannot predict ahead of time how much memory, or 
+in what form, will be needed: </para>
+      <list id="id4037752" list-type="bulleted">
+        <item>Recursive procedures. Even regular procedures are hard to predict 
+(data dependencies).</item>
+        <item>OS does not know how many jobs there will be or which programs 
+will be run.</item>
+        <item>Complex data structures, e.g. linker symbol table. If all storage 
+must be reserved in advance (statically), then it will be used inefficiently 
+(enough will be reserved to handle the worst possible case).</item>
+      </list>
+      <para id="id4037778">Need dynamic memory allocation both for main memory 
+and for file space on disk. </para>
+      <para id="id4037783">Two basic operations in dynamic storage management: 
+</para>
+      <list id="id4037788" list-type="bulleted">
+        <item>Allocate</item>
+        <item>Free</item>
+      </list>
+      <para id="id4037803">Dynamic allocation can be handled in one of two 
+general ways: </para>
+      <list id="id4037808" list-type="bulleted">
+        <item>Stack allocation (hierarchical): restricted, but simple and 
+efficient.</item>
+        <item>Heap allocation: more general, but less efficient, more difficult 
+to implement.</item>
+      </list>
+      <para id="id4037824">Stack organization: memory allocation and freeing are 
+partially predictable (as usual, we do better when we can predict the future). 
+Allocation is hierarchical: memory is freed in opposite order from allocation. 
+If alloc(A) then alloc(B) then alloc(C), then it must be free(C) then free(B) 
+then free(A). </para>
+      <list id="id4037834" list-type="bulleted">
+        <item>Example: procedure call. Program calls Y, which calls X. Each call 
+pushes another stack frame on top of the stack. Each stack frame has space for 
+variable, parameters, and return addresses.</item>
+        <item>Stacks are also useful for lots of other things: tree traversal, 
+expression evaluation, top-down recursive descent parsers, etc.</item>
+      </list>
+      <para id="id4037853">A stack-based organization keeps all the free space 
+together in one place. </para>
+      <para id="id4037859">
+        <media id="id1166866804252" alt=""><image src="../../media/graphics2-cc1e.png" mime-type="image/png" height="214" width="558"/></media>
+      </para>
+      <para id="id4037893">Heap organization: allocation and release are 
+unpredictable. Heaps are used for arbitrary list structures, complex data 
+organizations. Example: payroll system. Do not know when employees will join and 
+leave the company, must be able to keep track of all them using the least 
+possible amount of storage. </para>
+      <para id="id4037902">
+        <media id="id1166866804292" alt=""><image src="../../media/graphics3-d76d.png" mime-type="image/png" height="199" width="532"/></media>
+      </para>
+      <list id="id4037936" list-type="bulleted">
+        <item>Inevitably end up with lots of holes. Goal: reuse the space in 
+holes to keep the number of holes small, their size large.</item>
+        <item>Fragmentation: inefficient use of memory due to holes that are too 
+small to be useful. In stack allocation, all the holes are together in one big 
+chunk.</item>
+        <item>Refer to Knuth volume 1 for detailed treatment of what 
+follows.</item>
+        <item>Typically, heap allocation schemes use a free list to keep track 
+of the storage that is not in use. Algorithms differ in how they manage the free 
+list. <list id="id4037980" list-type="bulleted"><item>Best fit: keep linked list of 
+free blocks, search the whole list on each allocation, choose block that comes 
+closest to matching the needs of the allocation, save the excess for later. 
+During release operations, merge adjacent free blocks.</item><item>First fit: 
+just scan list for the first hole that is large enough. Free excess. Also merge 
+on releases. Most first fit implementations are rotating first 
+fit.</item></list></item>
+      </list>
+      <list id="id4037998" list-type="bulleted">
+        <item>Bit Map: used for allocation of storage that comes in fixed-size 
+chunks (e.g. disk blocks, or 32-byte chunks). Keep a large array of bits, one 
+for each chunk. If bit is 0 it means chunk is in use, if bit is 1 it means chunk 
+is free. Will be discussed more when talking about file systems.</item>
+      </list>
+      <para id="id4038012">
+        <media id="id1166866795121" alt=""><image src="../../media/graphics4-1fbc.png" mime-type="image/png" height="188" width="527"/></media>
+      </para>
+      <para id="id4038046">Pools: keep a separate allocation pool for each 
+popular size. Allocation is fast, no fragmentation. </para>
+      <para id="id4038052">Reclamation Methods: how do we know when memory can 
+be freed? </para>
+      <list id="id4038057" list-type="bulleted">
+        <item>It is easy when a chunk is only used in one place.</item>
+        <item>Reclamation is hard when information is shared: it cannot be 
+recycled until all of the sharers are finished. Sharing is indicated by the 
+presence of pointers to the data (show example). Without a pointer, cannot 
+access (cannot find it).</item>
+      </list>
+      <para id="id4038088">Two problems in reclamation: </para>
+      <list id="id4038092" list-type="bulleted">
+        <item>Dangling pointers: better not recycle storage while it is still 
+being used.</item>
+        <item>Core leaks: Better not "lose" storage by forgetting to free it 
+even when it cannot ever be used again.</item>
+      </list>
+      <para id="id4038109">Reference Counts: keep track of the number of 
+outstanding pointers to each chunk of memory. When this goes to zero, free the 
+memory. Example: Smalltalk, file descriptors in Unix. Works fine for 
+hierarchical structures. The reference counts must be managed automatically (by 
+the system) so no mistakes are made in incrementing and decrementing them. 
+</para>
+      <para id="id4038119">
+        <media id="id1166866795235" alt=""><image src="../../media/graphics5-fba9.png" mime-type="image/png" height="313" width="429"/></media>
+      </para>
+      <para id="id4038153">Garbage Collection: storage is not freed explicitly 
+(using free operation), but rather implicitly: just delete pointers. When the 
+system needs storage, it searches through all of the pointers (must be able to 
+find them all!) and collects things that are not used. If structures are 
+circular then this is the only way to reclaim space. Makes life easier on the 
+application programmer, but garbage collectors are incredibly difficult to 
+program and debug, especially if compaction is also done. Examples: Lisp, 
+capability systems. </para>
+      <para id="id4038166">How does garbage collection work? </para>
+      <list id="id4038170" list-type="bulleted">
+        <item>Must be able to find all objects.</item>
+        <item>Must be able to find all pointers to objects.</item>
+        <item>Pass 1: mark. Go through all pointers that are known to be in use: 
+local variables, global variables. Mark each object pointed to, and recursively 
+mark all objects it points to. </item>
+        <item>Pass 2: sweep. Go through all objects, free up those that are not 
+marked.</item>
+      </list>
+      <para id="id4038200">
+        <media id="id1166866795321" alt=""><image src="../../media/graphics6-d167.png" mime-type="image/png" height="709" width="621"/></media>
+      </para>
+      <para id="id4038234">Garbage collection is often expensive: 20% or more of 
+all CPU time in systems that use it. </para>
+    </section>
+    <section id="id-0147379131575">
+      <title>Sharing Main Memory</title>
+      <para id="id4038248">Issues: </para>
+      <list id="id4038252" list-type="bulleted">
+        <item>Want to let several processes coexist in main memory. </item>
+        <item>No process should need to be aware of the fact that memory is 
+shared. Each must run regardless of the number and/or locations of processes. 
+</item>
+        <item>Processes must not be able to corrupt each other. </item>
+        <item>Efficiency (both of CPU and memory) should not be degraded badly 
+by sharing. After all, the purpose of sharing is to increase overall efficiency. 
+</item>
+      </list>
+      <para id="id4038283">Relocation: draw a simple picture of memory with some 
+processes in it. </para>
+      <list id="id4038289" list-type="bulleted">
+        <item>Because several processes share memory, we cannot predict in 
+advance where a process will be loaded in memory. This is similar to a 
+compiler's inability to predict where a subroutine will be after linking. 
+</item>
+      </list>
+      <para id="id4038301">
+        <media id="id4692337" alt=""><image src="../../media/graphics7-7fcc.png" mime-type="image/png" height="397" width="303"/></media>
+      </para>
+      <list id="id4038335" list-type="bulleted">
+        <item>Relocation adjusts a program to run in a different area of memory. 
+Linker is an example of static relocation used to combine modules into programs. 
+We now look at relocation techniques that allow several programs to share one 
+main memory. </item>
+      </list>
+      <para id="id4038348">Static software relocation, no protection: </para>
+      <list id="id4038352" list-type="bulleted">
+        <item>Lowest memory holds OS. </item>
+        <item>Processes are allocated memory above the OS. </item>
+        <item>When a process is loaded, relocate it so that it can run in its 
+allocated memory area (just like linker: linker combines several modules into 
+one program, OS loader combines several processes to fit into one memory; only 
+difference is that there are no cross-references between processes). </item>
+        <item>Problem: any process can destroy any other process and/or the 
+operating system. </item>
+        <item>Examples: early batch monitors where only one job ran at a time 
+and all it could do was wreck the OS, which would be rebooted by an operator. 
+Many of today's personal computers also operate in a similar fashion. </item>
+      </list>
+      <para id="id4038392">Static relocation with protection keys (IBM S/360 
+approach): </para>
+      <para id="id4038397">
+        <media id="id4692446" alt=""><image src="../../media/graphics8-04b7.png" mime-type="image/png" height="388" width="453"/></media>
+      </para>
+      <list id="id4038432" list-type="bulleted">
+        <item>Protection Key = a small integer stored with each chunk of memory. 
+The chunks are likely to be 1k-4k bytes. </item>
+        <item>Keep an extra hardware register to identify the current process. 
+This is called the process id, or PID. 0 is reserved for the operating system's 
+process id. </item>
+        <item>On every memory reference, check the PID of the current process 
+against the key of the memory chunk being accessed. PID 0 is allowed to touch 
+anything, but any other mismatch results in an error trap. </item>
+        <item>Additional control: who is allowed to set the PID? How does OS 
+regain control once it has given it up? </item>
+        <item>This is the scheme used for the IBM S/360 family. It is safe but 
+inconvenient: <list id="id4038472" list-type="bulleted"><item>Programs have to be 
+relocated before loading. In some systems (e.g. MPS) this requires complete 
+relinking. Expensive. </item><item>Cannot share information between two 
+processes very easily </item><item>Cannot swap a process out to secondary 
+storage and bring it back to a different location </item></list></item>
+      </list>
+      <para id="id4038494">Dynamic memory relocation: instead of changing the 
+addresses of a program before it is loaded, we change the address dynamically 
+during every reference. </para>
+      <list id="id4038512" list-type="bulleted">
+        <item>Under dynamic relocation, each program-generated address (called a 
+logical or virtual address) is translated in hardware to a physical, or real 
+address. This happens as part of each memory reference. </item>
+      </list>
+      <para id="id4038560">
+        <media id="id4692571" alt=""><image src="../../media/graphics9-78a5.png" mime-type="image/png" height="423" width="459"/></media>
+      </para>
+      <list id="id4038594" list-type="bulleted">
+        <item>Show how dynamic relocation leads to two views of memory, called 
+address spaces. With static relocation we force the views to coincide so that 
+there can be several levels of mapping. </item>
+      </list>
+    </section>
+    <section id="id-0813392193918">
+      <title>Base and Bounds, Segmentation</title>
+      <para id="id4038625">Base &amp; bounds relocation: </para>
+      <list id="id4038631" list-type="bulleted">
+        <item>Two hardware registers: base address for process, bounds register 
+that indicates the last valid address the process may generate. </item>
+      </list>
+      <para id="id4038642">
+        <media id="id4692658" alt=""><image src="../../media/graphics10-94b4.png" mime-type="image/png" height="343" width="378"/></media>
+      </para>
+      <para id="id4038676">Each process must be allocated contiguously in real 
+memory. </para>
+      <list id="id4038681" list-type="bulleted">
+        <item>On each memory reference, the virtual address is compared to the 
+bounds register, then added to the base register. A bounds violation results in 
+an error trap. </item>
+        <item>Each process appears to have a completely private memory of size 
+equal to the bounds register plus 1. Processes are protected from each other. No 
+address relocation is necessary when a process is loaded. </item>
+        <item>Typically, the OS runs with relocation turned off, and there are 
+special instructions to branch to and from the OS while at the same time turning 
+relocation on and off. Modification of the base and bounds registers must also 
+be controlled. </item>
+        <item>Base &amp; bounds is cheap -- only 2 registers -- and fast -- the 
+add and compare can be done in parallel. </item>
+        <item>Explain how swapping can work. </item>
+        <item>Examples: CRAY-1. </item>
+      </list>
+      <para id="id4038730">Problem with base&amp;bound relocation: </para>
+      <list id="id4038735" list-type="bulleted">
+        <item>Only one segment. How can two processes share code while keeping 
+private data areas (e.g. shared editor)? Draw a picture to show that it cannot 
+be done safely with a single-segment scheme. </item>
+      </list>
+      <para id="id4038747">Multiple segments. </para>
+      <list id="id4038752" list-type="bulleted">
+        <item>Permit process to be split between several areas of memory. Each 
+area is called a segment and contains a collection of logically-related 
+information, e.g. code or data for a module. </item>
+      </list>
+      <para id="id4038775">
+        <media id="id4692801" alt=""><image src="../../media/graphics11-d51b.png" mime-type="image/png" height="547" width="472"/></media>
+      </para>
+      <list id="id4038809" list-type="bulleted">
+        <item>Use a separate base and bound for each segment, and also add a 
+protection bit (read/write). </item>
+        <item>Each memory reference indicates a segment and offset in one or 
+more of three ways: <list id="id4038826" list-type="bulleted"><item>Top bits of 
+address select segment, low bits the offset. This is the most common, and the 
+best. </item><item>Or, segment is selected implicitly by the operation being 
+performed (e.g. code vs. data, stack vs. data). </item><item>Or, segment is 
+selected by fields in the instruction (as in Intel x86 prefixes). 
+</item></list></item>
+      </list>
+      <para id="id4038848">(The last two alternatives are kludges used for 
+machines with such small addresses that there is not room for both a segment 
+number and an offset) </para>
+      <para id="id4038854"> Segment table holds the bases and bounds for all 
+the segments of a process. </para>
+      <para id="id4038862"> Show memory mapping procedure, involving table 
+lookup + add + compare. Example: PDP-10 with high and low segments selected by 
+high-order address bit. </para>
+      <para id="id4038872">Segmentation example: 8-bit segment number, 16-bit 
+offset. </para>
+      <list id="id4038880" list-type="bulleted">
+        <item>Segment table (use above picture -- all numbers in hexadecimal): 
+</item>
+        <item>Code in segment 0 (addresses are virtual): </item>
+        <item>0x00242:mov 0x60100,%r1</item>
+        <item>0x00246:st %r1,0x30107</item>
+        <item>0x0024A:b 0x20360</item>
+        <item>Code in segment 2: </item>
+        <item>0x20360:ld [%r1+2],%r2</item>
+        <item>0x20364:ld [%r2],%r3</item>
+        <item>...</item>
+        <item>0x203C0:ret</item>
+      </list>
+      <para id="id4038983">Advantage of segmentation: segments can be swapped 
+and assigned to storage independently. </para>
+      <para id="id4038988">Problems: </para>
+      <list id="id4038993" list-type="bulleted">
+        <item>External fragmentation: segments of many different sizes. </item>
+        <item>Segments may be large, have to be allocated contiguously. </item>
+        <item>(These problems also apply to base and bound schemes) </item>
+      </list>
+      <para id="id4039015">Example: in PDP-10's when a segment gets larger, it 
+may have to be shuffled to make room. If things get really bad it may be 
+necessary to compact memory. </para>
+    </section>
+    <section id="id-100104758683">
+      <title>Paging</title>
+      <para id="id4039030">Goal is to make allocation and swapping easier, and 
+to reduce memory fragmentation. </para>
+      <list id="id4039036" list-type="bulleted">
+        <item>Make all chunks of memory the same size, call them pages. Typical 
+sizes range from 512-8k bytes. </item>
+        <item>For each process, a page table defines the base address of each of 
+that process' pages along with read/only and existence bits. </item>
+        <item>Page number always comes directly from the address. Since page 
+size is a power of two, no comparison or addition is necessary. Just do table 
+lookup and bit substitution. </item>
+        <item>Easy to allocate: keep a free list of available pages and grab the 
+first one. Easy to swap since everything is the same size, which is usually the 
+same size as disk blocks to and from which pages are swapped. </item>
+        <item>Problems: <list id="id4039098" list-type="bulleted"><item>Internal 
+fragmentation: page size does not match up with information size. The larger the 
+page, the worse this is. </item><item>Table space: if pages are small, the table 
+space could be substantial. In fact, this is a problem even for normal page 
+sizes: consider a 32-bit address space with 1k pages. What if the whole table 
+has to be present at once? Partial solution: keep base and bounds for page 
+table, so only large processes have to have large tables. 
+</item><item>Efficiency of access: it may take one overhead reference for every 
+real memory reference (page table is so big it has to be kept in memory). 
+</item></list></item>
+      </list>
+      <para id="id4039125">
+        <media id="id4693129" alt=""><image src="../../media/graphics12-9057.png" mime-type="image/png" height="572" width="493"/></media>
+      </para>
+      <section id="id-391774195071">
+        <title>Two-Level (Multi-Level) Paging</title>
+        <para id="id4039166">Use two levels of mapping to make tables 
+manageable. </para>
+        <para id="id4039171">
+          <media id="id4693181" alt=""><image src="../../media/graphics13-8666.png" mime-type="image/png" height="600" width="645"/></media>
+        </para>
+      </section>
+      <section id="id-240746897292">
+        <title>Segmentation and Paging</title>
+        <para id="id4039214">Use two levels of mapping, with logical sizes for 
+objects, to make tables manageable. </para>
+        <list id="id4039219" list-type="bulleted">
+          <item>Each segment contains one or more pages. </item>
+          <item>Segment correspond to logical units: code, data, stack. Segments 
+vary in size and are often large. Pages are for the use of the OS; they are 
+fixed size to make it easy to manage memory. </item>
+          <item>Going from paging to P+S is like going from single segment to 
+multiple segments, except at a higher level. Instead of having a single page 
+table, have many page tables with a base and bound for each. Call the material 
+associated with each page table a segment. </item>
+        </list>
+        <para id="id4039247">
+          <media id="id4693264" alt=""><image src="../../media/graphics14-4f6c.png" mime-type="image/png" height="600" width="586"/></media>
+        </para>
+        <para id="id4039281">System 370 example: 24-bit virtual address space, 4 
+bits of segment number, 8 bits of page number, and 12 bits of offset. Segment 
+table contains real address of page table along with the length of the page 
+table (a sort of bounds register for the segment). Page table entries are only 
+12 bits, real addresses are 24 bits. </para>
+        <list id="id4039290" list-type="bulleted">
+          <item>If a segment is not used, then there is no need to even have a 
+page table for it. </item>
+          <item>Can share at two levels: single page, or single segment (whole 
+page table). </item>
+        </list>
+        <para id="id4039307">Pages eliminate external fragmentation, and make it 
+possible for segments to grow without any reshuffling. </para>
+        <para id="id4039313">If page size is small compared to most segments, 
+then internal fragmentation is not too bad. </para>
+        <para id="id4039319">The user is not given access to the paging tables. 
+</para>
+        <para id="id4039324">If translation tables are kept in main memory, 
+overheads could be very high: 1 or 2 overhead references for every real 
+reference. </para>
+        <para id="id4039330">Another example: VAX. </para>
+        <list id="id4039335" list-type="bulleted">
+          <item>Address is 32 bits, top two select segment. Three base-bound 
+pairs define page tables (system, P0, P1). </item>
+          <item>Pages are 512 bytes long. </item>
+          <item>Read-write protection information is contained in the page table 
+entries, not in the segment table. </item>
+          <item>One segment contains operating system stuff, two contain stuff 
+of current user process. </item>
+          <item>Potential problem: page tables can get big. Do not want to have 
+to allocate them contiguously, especially for large user processes. Solution: 
+<list id="id4039373" list-type="bulleted"><item>System base-bounds pairs are physical 
+addresses, system tables must be contiguous. </item><item>User base-bounds pairs 
+are virtual addresses in the system space. This allows the user page tables to 
+be scattered in non-contiguous pages of physical memory. </item><item>The result 
+is a two-level scheme. </item></list></item>
+        </list>
+        <para id="id4039394">In current systems, you will see three and even 
+four-level schemes to handle 64-bit address spaces. </para>
+      </section>
+    </section>
+    <section id="id-838458399547">
+      <title>Translation Buffers and Inverted Page Tables</title>
+      <para id="id4039409">Problem with segmentation and paging: extra memory 
+references to access translation tables can slow programs down by a factor of 
+two or three. Too many entries in translation tables to keep them all loaded in 
+fast processor memory. </para>
+      <para id="id4039418">We will re-introduce fundamental concept of locality: 
+at any given time a process is only using a few pages or segments. </para>
+      <section id="id-647436261129">
+        <title>Translation Lookaside Buffer</title>
+        <para id="id4039430">
+          <media id="id4693499" alt=""><image src="../../media/graphics15-5492.png" mime-type="image/png" height="560" width="699"/></media>
+        </para>
+        <para id="id4039465">Solution: Translation Lookaside Buffer (TLB). A 
+translation buffer is used to store a few of the translation table entries. It 
+is very fast, but only remembers a small number of entries. On each memory 
+reference: </para>
+        <list id="id4039472" list-type="bulleted">
+          <item>First ask TLB if it knows about the page. If so, the reference 
+proceeds fast. </item>
+          <item>If TLB has no info for page, must go through page and segment 
+tables to get info. Reference takes a long time, but give the info for this page 
+to TLB so it will know it for next reference (TLB must forget one of its current 
+entries in order to record new one). </item>
+        </list>
+        <para id="id4039492">TLB Organization: Show picture of black box. 
+Virtual page number goes in, physical page location comes out. Similar to a 
+cache, usually direct mapped. </para>
+        <para id="id4039499">TLB is just a memory with some comparators. Typical 
+size of memory: 128 entries. Each entry holds a virtual page number and the 
+corresponding physical page number. How can memory be organized to find an entry 
+quickly? </para>
+        <list id="id4039507" list-type="bulleted">
+          <item>One possibility: search whole table from start on every 
+reference. </item>
+          <item>A better possibility: restrict the info for any given virtual 
+page to fall in exactly one location in the memory. Then only need to check that 
+one location. E.g. use the low-order bits of the virtual page number as the 
+index into the memory. This is the way real TLB's work. </item>
+        </list>
+        <para id="id4039526">Disadvantage of TLB scheme: if two pages use the 
+same entry of the memory, only one of them can be remembered at once. If process 
+is referencing both pages at same time, TLB does not work very well. </para>
+        <para id="id4039534">Example: TLB with 64 (100 octal) slots. Suppose the 
+following virtual pages are referenced (octal): 621, 2145, 621, 2145, ... 321, 
+2145, 321, 621. </para>
+        <para id="id4039541">TLBs are a lot like hash tables except simpler 
+(must be to be implemented in hardware). Some hash functions are better than 
+others. </para>
+        <list id="id4039547" list-type="bulleted">
+          <item>Is it better to use low page number bits than high ones? </item>
+          <item>Is there any way to improve on the TLB hashing function? </item>
+        </list>
+        <para id="id4039563">
+          <media id="id4693672" alt=""><image src="../../media/graphics16-02bf.png" mime-type="image/png" height="571" width="444"/></media>
+        </para>
+        <para id="id4039597">Another approach: let any given virtual page use 
+either of two slots in the TLB. Make memory wider, use two comparators to check 
+both slots at once. </para>
+        <list id="id4039615" list-type="bulleted">
+          <item>This is as fast as the simple scheme, but a bit more expensive 
+(two comparators instead of one, also have to decide which old entry to replace 
+when bringing in a new entry). </item>
+          <item>Advantage: less likely that there will be conflicts that degrade 
+performance (takes three pages falling in the same place, instead of two). 
+</item>
+          <item>Explain names: <list id="id4039640" list-type="bulleted"><item>Direct 
+mapped. </item><item>Set associative. </item><item>Fully associative. 
+</item></list></item>
+        </list>
+        <para id="id4039658">Must be careful to flush TLB during each context 
+swap. Why? </para>
+        <para id="id4039664">In practice, TLB's have been extremely successful 
+with 95% or great hit rates for relatively small sizes. </para>
+      </section>
+    </section>
+    <section id="id-287976049628">
+      <title>Inverted Page Tables</title>
+      <para id="id4039679">As address spaces have grown to 64 bits, the side of 
+traditional page tables becomes a problem. Even with two-level (or even three or 
+four!) page tables, the tables themselves can become too large. </para>
+      <para id="id4039686">A solution (used on the IBM Power4 and others) to 
+this problem has two parts: </para>
+      <list id="id4039692" list-type="bulleted">
+        <item>A physical page table instead of a logical one. The physical page 
+table is often called an inverted page table. This table contains one entry per 
+page frame. An inverted page table is very good at mapping from physical page to 
+logical page number (as is done by the operating system during a page fault), 
+but not very good at mapping from virtual page number to physical page number 
+(as is done on every memory reference by the processor). </item>
+        <item>A TLB fixes the above problem. Since there is no other hardware or 
+registers dedicated to memory mapping, the TLB can be quite a bit larger so that 
+missing-entry faults are rare. </item>
+      </list>
+      <para id="id4039745">With an inverted page table, most address 
+translations are handled by the TLB. When there is a miss in the TLB, the 
+operating is notified (via an interrupt) and TLB miss-handler is invoked. 
+</para>
+      <section id="id-851623412">
+        <title>Shadow Tables</title>
+        <para id="id4039759">The operating system can sometimes be thought of as 
+an extension of the abstractions provided by the hardware. However, when the 
+table format is defined by the hardware (such as for a page table entry), you 
+cannot change that format. So, what do you do if you wanted to store additional 
+information, such as last reference time or sharing pointer, in each entry? 
+</para>
+        <para id="id4039773">The most common solution is a technique that is 
+sometimes called a shadow table. The idea of a shadow is simple (and familiar to 
+Fortran programmers!): </para>
+        <list id="id4039791" list-type="bulleted">
+          <item>Consider the hardware defined data structure as an array.</item>
+          <item>For the new information that you want to add, define a new 
+(shadow) array.</item>
+          <item>There is one entry in the shadow array for each entry in the 
+hardware array.</item>
+          <item>For each new item you want to add to the data structure, you add 
+a new data member to the shadow array.</item>
+        </list>
+        <para id="id4039821">For example, consider the hardware defined page 
+table to be an array of structures: </para>
+        <code id="id4693969" display="block">
+    struct Page_Entry {
+	unsigned PageFrame_hi   : 10;  // 42-bit page frame number
+	unsigned PageFrame_mid  : 16;
+	unsigned PageFrame_low  : 16;
+	unsigned UserRead       :  1;
+	unsigned UserWrite      :  1;
+	unsigned KernelRead     :  1;
+	unsigned KernelWrite    :  1;
+	unsigned Reference      :  1;
+	unsigned Dirty          :  1;
+	unsigned Valid          :  1;
+    }
+
+    struct Page_Entry pageTable[TABLESIZE];
+
+</code>
+        <para id="id4039962">If you wanted to added a couple of data members, 
+you cannot simply change it to the following: </para>
+        <code id="id4693992" display="block">
+    struct Page_Entry {
+	unsigned PageFrame_hi   : 10;
+	unsigned PageFrame_mid  : 16;
+	unsigned PageFrame_low  : 16;
+	unsigned UserRead       :  1;
+	unsigned UserWrite      :  1;
+	unsigned KernelRead     :  1;
+	unsigned KernelWrite    :  1;
+	unsigned Reference      :  1;
+	unsigned Dirty          :  1;
+	unsigned Valid          :  1;
+	Time_t lastRefTime;
+	PageList *shared;
+    }
+
+</code>
+        <para id="id4040115">Instead, you would define a a second array based on 
+this type: </para>
+        <code id="id4694012" display="block">
+struct Page_Entry {                      struct PE_Shadow {
+	unsigned PageFrame_hi   : 10;            Time_t lastRefTime;
+	unsigned PageFrame_mid  : 16;            PageList *shared;
+	unsigned PageFrame_low  : 16;        }
+	unsigned UserRead       :  1;
+	unsigned UserWrite      :  1;
+	unsigned KernelRead     :  1;
+	unsigned KernelWrite    :  1;
+	unsigned Reference      :  1;
+	unsigned Dirty          :  1;
+	unsigned Valid          :  1;
+    }
+
+    struct Page_Entry pageTable[TABLESIZE];
+    struct PE_Shadow  pageShadow[TABLESIZE];
+
+</code>
+      </section>
+    </section>
+    <section id="id-842938355904">
+      <title>Virtual Memory, Page Faults</title>
+      <para id="id4040290">Problem: how does the operating system get 
+information from user memory? E.g. I/O buffers, parameter blocks. Note that the 
+user passes the OS a virtual address. </para>
+      <list id="id4040309" list-type="bulleted">
+        <item>In some cases the OS just runs unmapped. Then all it has to do is 
+read the tables and translate user addresses in software. However, addresses 
+that are contiguous in the virtual address space may not be contiguous 
+physically. Thus I/O operations may have to be split up into multiple blocks. 
+Draw an example. </item>
+        <item>Suppose the operating system also runs mapped. Then it must 
+generate a page table entry for the user area. Some machines provide special 
+instructions to get at user stuff. Note that under no circumstances should users 
+be given access to mapping tables. </item>
+        <item>A few machines, most notably the VAX, make both system information 
+and user information visible at once (but the user cannot touch system stuff 
+unless the program is running with special kernel protection bit set). This 
+makes life easy for the kernel, although it does not solve the I/O problem. 
+</item>
+      </list>
+      <para id="id4040342">So far we have disentangled the programmer's view of 
+memory from the system's view using a mapping mechanism. Each sees a different 
+organization. This makes it easier for the OS to shuffle users around and 
+simplifies memory sharing between users. </para>
+      <para id="id4040351">However, until now a user process had to be 
+completely loaded into memory before it could run. This is wasteful since a 
+process only needs a small amount of its total memory at any one time 
+(locality). Virtual memory permits a process to run with only some of its 
+virtual address space loaded into physical memory. </para>
+      <section id="id-700070494242">
+        <title>The Memory Hierarchy</title>
+        <para id="id4040367">The idea is to produce the illusion of a memory 
+with the size of the disk and the speed of main memory. </para>
+        <para id="id4040373">Data can be in registers (very fast), caches 
+(fast), main memory (not so fast, or disk (slow). Keep the things that you use 
+frequently as close to you (and as fast to access) as possible. </para>
+        <para id="id4040381">
+          <media id="id4694169" alt=""><image src="../../media/graphics17.png" mime-type="image/png" height="511" width="550"/></media>
+        </para>
+        <para id="id4040415">The reason that this works is that most programs 
+spend most of their time in only a small piece of the code. Give Knuth's 
+estimate of 90% of the time in 10% of the code. Introduce again the principle of 
+locality. </para>
+      </section>
+      <section id="id-366167148403">
+        <title>Page Faults</title>
+        <para id="id4040442">If not all of process is loaded when it is running, 
+what happens when it references a byte that is only in the backing store? 
+Hardware and software cooperate to make things work anyway. </para>
+        <list id="id4040449" list-type="bulleted">
+          <item>First, extend the page tables with an extra bit "present". If 
+present is not set then a reference to the page results in a trap. This trap is 
+given a special name, page fault. </item>
+          <item>Any page not in main memory right now has the "present" bit 
+cleared in its page table entry. </item>
+          <item>When page fault occurs: <list id="id4040485" list-type="bulleted"><item>Operating system brings page into memory.</item><item>Page 
+table is updated, "present" bit is set.</item><item>The process is 
+continued.</item></list></item>
+        </list>
+        <para id="id4040504">
+          <media id="id4694308" alt=""><image src="../../media/graphics18.png" mime-type="image/png" height="600" width="648"/></media>
+        </para>
+        <para id="id4040538">Continuing process is very tricky, since it may 
+have been aborted in the middle of an instruction. Do not want user process to 
+be aware that the page fault even happened. </para>
+        <list id="id4040545" list-type="bulleted">
+          <item>Can the instruction just be skipped? </item>
+          <item>Suppose the instruction is restarted from the beginning. How is 
+the "beginning" located? </item>
+          <item>Even if the beginning is found, what about instructions with 
+side effects, like: </item>
+        </list>
+        <para id="id4040568">ld [%r2], %r2 </para>
+        <list id="id4040573" list-type="bulleted">
+          <item>Without additional information from the hardware, it may be 
+impossible to restart a process after a page fault. Machines that permit 
+restarting must have hardware support to keep track of all the side effects so 
+that they can be undone before restarting. </item>
+          <item>Forest Baskett's approach for the old Zilog Z8000 (two 
+processors, one just for handling page faults) </item>
+          <item>IBM 370 solution (execute long instructions twice). </item>
+          <item>If you think about this when designing the instruction set, it 
+is not too hard to make a machine virtualizable. It is much harder to do after 
+the fact. VAX is example of doing it right. </item>
+        </list>
+      </section>
+      <section id="id-749076843077">
+        <title>Effective Access Time Calculation</title>
+        <para id="id4040637">We can calculate the estimated cost of page faults 
+by performing an effective access time calculation. The basic idea is that 
+sometimes you access a location quickly (there is no page fault) and sometimes 
+more slowly (you have to wait for a page to come into memory). We use the cost 
+of each type of access and the percentage of time that it occurs to compute the 
+average time to access a word. </para>
+        <para id="id4040660">Let: </para>
+        <list id="id4040664" list-type="bulleted">
+          <item>h = fraction of time that a reference does not require a page 
+fault. </item>
+          <item>tmem = time it takes to read a word from memory. </item>
+          <item>tdisk = time it takes to read a page from disk. </item>
+        </list>
+        <para id="id4040725">then </para>
+        <list id="id4040729" list-type="bulleted">
+          <item>EAT = h * tmem + (1 - h) * tdisk. </item>
+        </list>
+        <para id="id4040758">If there a multiple classes of memory accesses, 
+such as no disk access, one disk access, and two disk access, then you would 
+have a fraction (h) and access time (t) for each class of access. </para>
+        <para id="id4040785">Note that this calculation is the same type that 
+computer architects use to calculate memory performance. In that case, their 
+access classes might be (1) cached in L1, (2) cached in L2, and (3) RAM. </para>
+      </section>
+      <section id="id-136527909873">
+        <title>Page Selection and Replacement</title>
+        <para id="id4040800">Once the hardware has provided basic capabilities 
+for virtual memory, the OS must make two kinds of scheduling decisions: </para>
+        <list id="id4040806" list-type="bulleted">
+          <item>Page selection: when to bring pages into memory. </item>
+          <item>Page replacement: which page(s) should be thrown out, and when. 
+</item>
+        </list>
+        <para id="id4040822">Page selection Algorithms: </para>
+        <list id="id4040827" list-type="bulleted">
+          <item>Demand paging: start up process with no pages loaded, load a 
+page when a page fault for it occurs, i.e. until it absolutely MUST be in 
+memory. Almost all paging systems are like this. </item>
+          <item>Request paging: let user say which pages are needed. The trouble 
+is, users do not always know best, and are not always impartial. They will 
+overestimate needs. </item>
+          <item>Prepaging: bring a page into memory before it is referenced 
+(e.g. when one page is referenced, bring in the next one, just in case). Hard to 
+do effectively without a prophet, may spend a lot of time doing wasted work. 
+</item>
+        </list>
+        <para id="id4040856">Page Replacement Algorithms: </para>
+        <list id="id4040860" list-type="bulleted">
+          <item>Random: pick any page at random (works surprisingly well!). 
+</item>
+          <item>FIFO: throw out the page that has been in memory the longest. 
+The idea is to be fair, give all pages equal residency. </item>
+          <item>MIN: naturally, the best algorithm arises if we can predict the 
+future. </item>
+          <item>LFU: use the frequency of past references to predict the future. 
+</item>
+          <item>LRU: use the order of past references to predict the future. 
+</item>
+        </list>
+        <para id="id4040896">Example: Try the reference string A B C A B D A D B 
+C B, assume there are three page frames of physical memory. Show the memory 
+allocation state after each memory reference. </para>
+        <para id="id4040903">
+          <media id="id4694745" alt=""><image src="../../media/graphics19.png" mime-type="image/png" height="673" width="543"/></media>
+        </para>
+        <para id="id4040937">Note that MIN is optimal (cannot be beaten), but 
+that the principle of locality states that past behavior predicts future 
+behavior, thus LRU should do just about as well. </para>
+        <para id="id4040944">Implementing LRU: need some form of hardware 
+support, in order to keep track of which pages have been used recently. </para>
+        <list id="id4040951" list-type="bulleted">
+          <item>Perfect LRU? Keep a register for each page, and store the system 
+clock into that register on each memory reference. To replace a page, scan 
+through all of them to find the one with the oldest clock. This is expensive if 
+there are a lot of memory pages. </item>
+          <item>In practice, nobody implements perfect LRU. Instead, we settle 
+for an approximation which is efficient. Just find an old page, not necessarily 
+the oldest. LRU is just an approximation anyway (why not approximate a little 
+more?). </item>
+        </list>
+      </section>
+    </section>
+    <section id="id-509040922396">
+      <title>Clock Algorithm, Thrashing</title>
+      <para id="id4040982">This is an efficient way to approximate LRU. </para>
+      <para id="id4040987">Clock algorithm: keep "use" bit for each page frame, 
+hardware sets the appropriate bit on every memory reference. The operating 
+system clears the bits from time to time in order to figure out how often pages 
+are being referenced. Introduce clock algorithm where to find a page to throw 
+out the OS circulates through the physical frames clearing use bits until one is 
+found that is zero. Use that one. Show clock analogy. </para>
+      <para id="id4040999">
+        <media id="id4694876" alt=""><image src="../../media/graphics20.png" mime-type="image/png" height="253" width="492"/></media>
+      </para>
+      <para id="id4041033">Fancier algorithm: give pages a second (third? 
+fourth?) chance. Store (in software) a counter for each page frame, and 
+increment the counter if use bit is zero. Only throw the page out if the counter 
+passes a certain limit value. Limit = 0 corresponds to the previous case. What 
+happens when limit is small? large? </para>
+      <para id="id4041042">Some systems also use a "dirty" bit to give 
+preference to dirty pages. This is because it is more expensive to throw out 
+dirty pages: clean ones need not be written to disk. </para>
+      <para id="id4041049">What does it mean if the clock hand is sweeping very 
+slowly? </para>
+      <para id="id4041055">What does it mean if the clock hand is sweeping very 
+fast? </para>
+      <para id="id4041060">If all pages from all processes are lumped together 
+by the replacement algorithm, then it is said to be a global replacement 
+algorithm. Under this scheme, each process competes with all of the other 
+processes for page frames. A per process replacement algorithm allocates page 
+frames to individual processes: a page fault in one process can only replace one 
+of that process' frames. This relieves interference from other processes. A per 
+job replacement algorithm has a similar effect (e.g. if you run vi it may cause 
+your shell to lose pages, but will not affect other users). In per-process and 
+per-job allocation, the allocations may change, but only slowly. </para>
+      <para id="id4041102">
+        <media id="id4694972" alt=""><image src="../../media/graphics21.png" mime-type="image/png" height="396" width="408"/></media>
+      </para>
+      <para id="id4041136">Thrashing: consider what happens when memory gets 
+overcommitted. </para>
+      <list id="id4041142" list-type="bulleted">
+        <item>Suppose there are many users, and that between them their 
+processes are making frequent references to 50 pages, but memory has 40 pages. 
+</item>
+        <item>Each time one page is brought in, another page, whose contents 
+will soon be referenced, is thrown out. </item>
+        <item>Compute average memory access time. </item>
+        <item>The system will spend all of its time reading and writing pages. 
+It will be working very hard but not getting anything done. </item>
+        <item>Thrashing was a severe problem in early demand paging systems. 
+</item>
+      </list>
+      <para id="id4041179">Thrashing occurs because the system does not know 
+when it has taken on more work than it can handle. LRU mechanisms order pages in 
+terms of last access, but do not give absolute numbers indicating pages that 
+must not be thrown out. </para>
+      <para id="id4041199">
+        <media id="id4695079" alt=""><image src="../../media/graphics22.png" mime-type="image/png" height="246" width="386"/></media>
+      </para>
+      <para id="id4041233">What can be done? </para>
+      <list id="id4041238" list-type="bulleted">
+        <item>If a single process is too large for memory, there is nothing the 
+OS can do. That process will simply thrash. </item>
+        <item>If the problem arises because of the sum of several processes: 
+<list id="id4041255" list-type="bulleted"><item>Figure out how much memory each 
+process needs. </item><item>Change scheduling priorities to run processes in 
+groups whose memory needs can be satisfied. </item></list></item>
+      </list>
+    </section>
+    <section id="id-296922314376">
+      <title>Working Sets</title>
+      <para id="id4041277">Working Sets are a solution proposed by Peter 
+Denning. An informal definition is "the collection of pages that a process is 
+working with, and which must thus be resident if the process is to avoid 
+thrashing." The idea is to use the recent needs of a process to predict its 
+future needs. </para>
+      <list id="id4041293" list-type="bulleted">
+        <item>Choose tau, the working set parameter. At any given time, all 
+pages referenced by a process in its last tau seconds of execution are 
+considered to comprise its working set. </item>
+      </list>
+      <para id="id4041316">
+        <media id="id4695224" alt=""><image src="../../media/graphics23.png" mime-type="image/png" height="163" width="600"/></media>
+      </para>
+      <list id="id4041350" list-type="bulleted">
+        <item>A process will never be executed unless its working set is 
+resident in main memory. Pages outside the working set may be discarded at any 
+time. </item>
+      </list>
+      <para id="id4041362">Working sets are not enough by themselves to make 
+sure memory does not get overcommitted. We must also introduce the idea of a 
+balance set: </para>
+      <list id="id4041380" list-type="bulleted">
+        <item>If the sum of the working sets of all runnable processes is 
+greater than the size of memory, then refuse to run some of the processes (for a 
+while). </item>
+        <item>Divide runnable processes up into two groups: active and inactive. 
+When a process is made active its working set is loaded, when it is made 
+inactive its working set is allowed to migrate back to disk. The collection of 
+active processes is called the balance set. </item>
+        <item>Some algorithm must be provided for moving processes into and out 
+of the balance set. What happens if the balance set changes too frequently? 
+</item>
+      </list>
+      <para id="id4041420">As working sets change, corresponding changes will 
+have to be made in the balance set. </para>
+      <para id="id4041425">Problem with the working set: must constantly be 
+updating working set information. </para>
+      <list id="id4041431" list-type="bulleted">
+        <item>One of the initial plans was to store some sort of a capacitor 
+with each memory page. The capacitor would be charged on each reference, then 
+would discharge slowly if the page was not referenced. Tau would be determined 
+by the size of the capacitor. This was not actually implemented. One problem is 
+that we want separate working sets for each process, so the capacitor should 
+only be allowed to discharge when a particular process executes. What if a page 
+is shared? </item>
+        <item>Actual solution: take advantage of use bits <list id="id4041454" list-type="bulleted"><item>OS maintains idle time value for each page: amount of CPU 
+time received by process since last access to page. </item><item>Every once in a 
+while, scan all pages of a process. For each use bit on, clear page's idle time. 
+For use bit off, add process' CPU time (since last scan) to idle time. Turn all 
+use bits off during scan. </item><item>Scans happen on order of every few 
+seconds (in Unix, tau is on the order of a minute or more). 
+</item></list></item>
+      </list>
+      <para id="id4041489">Other questions about working sets and memory 
+management in general: </para>
+      <list id="id4041494" list-type="bulleted">
+        <item>What should tau be? <list id="id4041504" list-type="bulleted"><item>What if it is too large? </item><item>What if it is too 
+small? </item></list></item>
+        <item>What algorithms should be used to determine which processes are in 
+the balance set? </item>
+        <item>How do we compute working sets if pages are shared? </item>
+        <item>How much memory is needed in order to keep the CPU busy? Note than 
+under working set methods the CPU may occasionally sit idle even though there 
+are runnable processes. </item>
+      </list>
+    </section>
+  </content>
+</document>

@@ -1,0 +1,414 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Review question: Process</title>
+  <metadata>
+  <md:content-id>m27989</md:content-id><md:title>Review question: Process</md:title>
+  <md:abstract>Review Question 1 of Introduction to Operating Systems</md:abstract>
+  <md:uuid>0cbf5bc0-59e7-4f5c-af54-cd5099aa2eaf</md:uuid>
+</metadata>
+
+<content>
+    <section id="id-558466269028">
+      <title>Consider a hypothetical 32-bit microprocessor that has 32-bit 
+instructions composed of two fields. The first byte contains the opcode and the 
+remainder an immediate operand or an operand address. </title>
+      <list id="id3516747" list-type="bulleted">
+        <item>What is the maximum directly addressable memory capacity (in 
+bytes)? </item>
+      </list>
+      <para id="id3516754">2(32-8) = 16,777,216 bytes = 16 MB</para>
+      <list id="id3574435" list-type="bulleted">
+        <item>Discuss the impact on the system speed if the microprocessor data 
+bus has </item>
+      </list>
+      <list id="id3729050" list-type="bulleted">
+        <item>a 32-bit local address bus and a 16-bit local data bus.</item>
+      </list>
+      <para id="id3729058">Instruction and data transfers would take three bus 
+cycles each - one for the address and two for the data. </para>
+      <list id="id3729064" list-type="bulleted">
+        <item>a 16-bit local address bus and a 16-bit local data bus. </item>
+      </list>
+      <para id="id3401652">Instruction and data transfers would take four bus 
+cycles each - two for the address and two for the data. </para>
+      <list id="id3401658" list-type="bulleted">
+        <item>How many bits are needed for the program counter and the 
+instruction register? </item>
+      </list>
+      <para id="id3707522">24 bits for the PC (24-bit addresses), 32 bits for 
+the IR (32-bit addresses)</para>
+    </section>
+    <section id="id-852559331138">
+      <title>In virtually all systems that include DMA modules, DMA access to 
+main memory is given higher priority than processor access to main memory. Why? 
+</title>
+      <para id="id3707538">If a processor is held up in attempting to read or 
+write memory, usually no damage occurs except a slight loss of time. However, a 
+DMA transfer may be to or from a device that is receiving or sending data in a 
+stream (e.g., disk or network), and cannot be stopped. Thus, if the DMA module 
+is held up (denied continuing access to main memory), data will be lost.</para>
+    </section>
+    <section id="id-3748491318">
+      <title>Why does a batch system need memory protection? Why does a 
+multiprogrammed batch system need memory management and scheduling? Why do both 
+types of systems need interrupts? </title>
+      <para id="id3601636">A batch system needs memory protection so that 
+programs can't modify the monitor.</para>
+      <para id="id3707542">A multiprogrammed batch system needs memory 
+management so that multiple jobs can be kept in memory at the same time. Memory 
+management will determine which portion of memory each job can use. The system 
+also needs a scheduling algorithm to determine which job can run at any given 
+time.</para>
+      <para id="id3593787">Both types of systems need interrupts so that the 
+operating system can regain control of the CPU. A batch system needs this to 
+time-out a long job and a multiprogrammed system needs this to share the 
+processor among the active processes.</para>
+    </section>
+    <section id="id-1029380399">
+      <title>What is the purpose of system calls, and how do system calls relate 
+to the operating system and to the concept of dual-mode (kernel mode and user 
+mode) operation? </title>
+      <para id="id3593692">With a time sharing system, the primary concern is 
+turnaround time. A round-robin scheduler would given every process a chance to 
+run on the CPU for a short time, and reduce the average turnaround time. If the 
+scheduler instead let one job run until completion, then the first job would 
+have a short turnaround time, but later ones would have to wait for a long 
+time.</para>
+      <para id="id3593703">In a batch system, the primary concern is throughput. 
+In this case, the time spent switching between jobs is wasted, so a more 
+efficient scheduling algorithm would be first-come, first-served, and let each 
+job run on the processor as long as it wants.</para>
+    </section>
+    <section id="id-045534279197">
+      <title>In IBM's mainframe operating system, OS/390, one of the major 
+modules in the kernel is the System Resource Manager (SRM). This module is 
+responsible for the allocation of resources among address spaces (processes). 
+The SRM gives OS/390 a degree of sophistication unique among operating systems. 
+No other mainframe operating system, and certainly no other type of operating 
+system, can match the functions performed by SRM. The concept of resource 
+includes processor, real memory and I/O channels. SRM accumulates statistics 
+pertaining to utilization of processor, channel and various key data structures. 
+Its purpose is to provide optimum performance based on performance monitoring 
+and analysis. The installation sets forth various performance objectives, and 
+these serve as guidance to the SRM, which dynamically modifies installation and 
+job performance characteristics based on system utilization. In turn, the SRM 
+provides reports that enable the trained operator to refine the configuration 
+and parameter settings to improve user service. </title>
+      <para id="id3707291">This problem concerns one example of SRM activity. 
+Real memory is divided into equal-sized blocks called frames, of which there may 
+be many thousands. Each frame can hold a block of virtual memory referred to as 
+a page. SRM receives control approximately 20 times per second and inspects each 
+and every page frame. If the page has not been referenced or changed, a counter 
+is incremented by 1. Over time, SRM averages these numbers to determine the 
+average number of seconds that a page frame in the system goes untouched. What 
+might be the purpose of this and what action might SRM take?</para>
+      <para id="id3593728">The system operator can review this quantity to 
+determine the degree of "stress" on the system. By reducing the number of active 
+jobs allowed on the system, this average can be kept high. A typical guideline 
+is that this average should be kept above 2 minutes [IBM86]. This may seem like 
+a lot, but it isn't.</para>
+    </section>
+    <section id="id-196867039967">
+      <title>What main advantage does a system with virtual memory have over a 
+system without it? How does virtual memory help with memory protection? </title>
+      <para id="id3596164">With virtual memory, a process image does not need to 
+be entirely in physical memory for it to run. In addition, it is not restricted 
+to the size of physical memory. The process can address as much memory as it 
+wants, and the operating system brings blocks from secondary storage into 
+physical memory as they are needed. Virtual memory also helps with memory 
+protection because one process cannot address memory that belongs to another 
+process. All addresses are mapped by the operating system into its own address 
+space.</para>
+    </section>
+    <section id="id-172917431251">
+      <title>What is the difference between a symmetric multiprocessing system 
+and a distributed operating system? </title>
+      <para id="id3601440">In a symmetric multiprocessing system, a group of 
+processors with the same capabilities share memory and are located within the 
+same computer system. The existence of multiple processors is transparent to the 
+user. In a distributed operating system, the group of processors each addresses 
+its own memory, are located in different computers connected by a network, and 
+can have differing capabilities. The operating system allows the user to treat 
+the collection of systems as one computer.</para>
+    </section>
+    <section id="id-187473923172">
+      <title>What shortcoming does the two-state process model have? How does the 
+Blocked state fix this problem? </title>
+      <para id="id3646255">In the two-state process model, if a process is 
+interrupted for I/O, it is placed in a queue with other processes that are ready 
+to run. When the operating system wants to find a new process to run on the CPU, 
+it must search through the queue for a process that is ready. Using a model with 
+a Blocked state means that there are two separate queues: one for ready 
+processes and one for those that are waiting for I/O. When the operating system 
+wants to find a process that is ready, it can simply take the first process on 
+the ready queue.</para>
+    </section>
+    <section id="id-477901008672">
+      <title>What shortcoming does the five-state process model have? How does 
+swapping solve this problem? </title>
+      <para id="id3599394">Assuming virtual memory is not being used, then only 
+a limited number of processes can be active at any time. In the five-state 
+process model, it is possible that all active processes are waiting on an I/O 
+event and none of them are in the ready queue. In this case, the CPU will be 
+idle.</para>
+      <para id="id3599404">Swapping can solve this problem by taking a process 
+out of memory and writing it out to disk, then bringing in a new process that 
+can run on the CPU. The five-state model is augmented with a new state called 
+Suspended to indicate the process is swapped out.</para>
+    </section>
+    <section id="id-90782213225">
+      <title>What is contained in a process image? Some older operating systems 
+require the entire process image to be stored in main memory while the process 
+is executing. What problem does this create and how is it solved? </title>
+      <para id="id3610039">The process image contains user data (for program 
+data and the stack), the user program, the system stack (for procedure calls), 
+and the process control block (process identifiers, processor state, various 
+types of control information).</para>
+      <para id="id3610047">If the entire image must be in main memory, then the 
+image must be small and only a limited number of processes can be active at any 
+time. This problem can be solved by using virtual memory, so that only a portion 
+of the process image (the portion currently being used) needs to be in memory at 
+any given time.</para>
+    </section>
+    <section id="id-416413040528">
+      <title>It states that UNIX is unsuitable for real-time applications because 
+a process executing in kernel mode may not be preempted. Elaborate. </title>
+      <para id="id3763308">Because there are circumstances under which a process 
+may not be preempted (i.e., it is executing in kernel mode), it is impossible 
+for the operating system to respond rapidly to real-time requirements.</para>
+    </section>
+    <section id="id-327345263967">
+      <title>Use the ps program to list all the processes running on a Linux 
+machine (including system processes and processes for all users). List one 
+process for each unique state that is listed (i.e. one per unique entry in the 
+state column) and describe what state this process is in. See the manual page 
+for help with ps. Next, create five new processes in quick succession and leave 
+them running. Using ps, list their process identifiers. Is there any relation 
+between the identifiers they are assigned? </title>
+      <para id="id3646725">You can use ps ax to list all the processes on a 
+Linux machine. Here is a list of some of the processes I found:</para>
+      <para id="id3646743">PID TTY STAT TIME COMMAND</para>
+      <para id="id3678574">1 ? S 0:04 init [3]</para>
+      <para id="id3678589">2 ? SN 0:00 [ksoftirqd/0]</para>
+      <para id="id3610631">3 ? S&lt; 0:02 [events/0]</para>
+      <para id="id3610647">4 ? S&lt; 0:00 [khelper]</para>
+      <para id="id3611470">9 ? S&lt; 0:00 [kthread]</para>
+      <para id="id3611486">18 ? S&lt; 0:06 [kacpid]</para>
+      <para id="id3704984">118 ? S&lt; 0:00 [kblockd/0]</para>
+      <para id="id3705000">176 ? S 0:00 [pdflush]</para>
+      <para id="id3598469">179 ? S&lt; 0:00 [aio/0]</para>
+      <para id="id3598485">178 ? S 0:01 [kswapd0]</para>
+      <para id="id3707081">771 ? S 0:04 [kseriod]</para>
+      <para id="id3707097">829 ? S&lt; 0:00 [ata/0]</para>
+      <para id="id3565677">843 ? S&lt; 0:00 [reiserfs/0]</para>
+      <para id="id3565693">983 ? Ss 0:00 /sbin/devfsd /dev</para>
+      <para id="id3568541">5192 ? S 0:00 [khubd]</para>
+      <para id="id3568555">6328 ? Ss 0:00 metalog [MASTER]</para>
+      <para id="id3568588">6332 ? S 0:00 metalog [KERNEL]</para>
+      <para id="id3568602">6366 ? Ss 0:00 /usr/sbin/acpid -c 
+/etc/acpi/events</para>
+      <para id="id3568616">6991 ? Ss 0:00 /usr/sbin/cupsd</para>
+      <para id="id3752730">7326 ? Ss 0:00 /usr/sbin/fcron</para>
+      <para id="id3752743">7422 ? Ss 0:00 /usr/sbin/speedfreqd -P 
+/var/run/speedfreq.pid -p pow</para>
+      <para id="id3709751">There are many more. The TTY column indicates whether 
+the process is attached to a termanl, and STAT gives the state of the process. 
+Most processes are sleeping (S), one has been given a low priority (N), and 
+others have been given a high priority (&lt;). Notice that typically important 
+system processes have a high priority.</para>
+      <para id="id3709764">If you create five processes in quick succession, 
+they will typically have sequential process identifiers.</para>
+    </section>
+    <section id="id-563736849354">
+      <title>How is a process switch different from a mode switch? </title>
+      <para id="id3350389">A process switch involves the operating system having 
+to do a lot of work, whereas a mode switch is done completely in hardware. A 
+mode switch involves saving the state of the current process (in hardware), 
+changing to supervisor mode, then giving control to the operating system. The 
+idea is that the operating system will execute a short handler, then return 
+control to the processor. The processor will restore the state of the original 
+process and continue.</para>
+      <para id="id3350401">With a process switch, the operating system must give 
+control of the CPU to a different process, rather than resuming with the 
+previous process that was running. Thus it must save the context of the current 
+process in its PCB, update the PCB state and accounting information, move the 
+PCB to a new queue, execute the scheduling algorithm to choose a new process, 
+remove the PCB of that process from the ready queue, update its memory 
+management structures, and restore its context into the processor.</para>
+    </section>
+    <section id="id-0700775058054">
+      <title>In a threaded program, which resources are shared by the entire 
+process and which are associated with each thread? </title>
+      <para id="id3652043">The process address space, structures used for 
+interprocess communication, files, and I/O resources are associated with the 
+entire process. Each thread gets its own execution state, context (registers), 
+stack, and local variables.</para>
+    </section>
+    <section id="id-861232073672">
+      <title>Consider the following code: </title>
+      <list id="id3652059" list-type="enumerated">
+        <item>for (i = 0; i &lt; 10; i++)</item>
+        <item>for (j = 0; j &lt; 10; j++)</item>
+        <item>a[i] = a[i] * j<list id="id3692823" list-type="bulleted"><item>Give one 
+example of the spatial locality in the code. </item></list></item>
+      </list>
+      <para id="id3692830">Spatial locality occurs when the array a is accessed 
+sequentially.</para>
+      <list id="id3692845" list-type="bulleted">
+        <item>Give one example of the temporal locality in the code. </item>
+      </list>
+      <para id="id3599466">Temporal locality occurs when i is used repeatedly 
+with the same value in the second loop.</para>
+    </section>
+    <section id="id-994212705742">
+      <title>Consider a memory system with the following parameters: </title>
+      <list id="id3599480" list-type="bulleted">
+        <item>Tc = 100 ns</item>
+        <item>Tm = 1200 ns</item>
+        <item>Cc = 0.01 cents/bit</item>
+        <item>Cm = 0.001 cents/bit</item>
+      </list>
+      <list id="id3586235" list-type="enumerated">
+        <item>What is the cost of 1 MByte of main memory? </item>
+      </list>
+      <para id="id3586245">Cost = Cm x 8 x 220 = $83.89</para>
+      <list id="id3516557" list-type="enumerated">
+        <item>What is the cost of 1 Mbyte of main memory using cache memory 
+technology? </item>
+      </list>
+      <para id="id3516569">Cost = Cc x 8 x 220 = $838.86</para>
+      <list id="id3586530" list-type="enumerated">
+        <item>If the effective access time is 10% greater than the cache access 
+time, what is the hit ratio H? </item>
+      </list>
+      <para id="id3586543">1.1 x Tc = Tc + (1 - H)Tm110 = 100 + (1 - H) x 
+12001200 x H = 1190H = 1190/1200 = 99.2% </para>
+    </section>
+    <section id="id-813901344158">
+      <title>A computer has a cache, main memory, and a disk used for virtual 
+memory. If a referenced word is in the cache, 20 ns are required to access it. 
+If it is in main memory but not in the cache, 60 ns are needed to load it into 
+the cache (this includes the time to originally check the cache), and then the 
+reference is started again. If the word is not in main memory, 12 ms are 
+required to fetch the word from disk, followed by 60 ns to copy it to the cache, 
+and then the reference is started again. The cache hit ratio is 0.9 and the main 
+memory hit ratio is 0.6. What is the average time in ns required to access a 
+referenced word on this system? </title>
+      <para id="id3712458">There are three cases to consider: </para>
+      <table id="id3598841" summary="">
+        <tgroup cols="3">
+          <colspec colnum="1" colname="c1"/>
+          <colspec colnum="2" colname="c2"/>
+          <colspec colnum="3" colname="c3"/>
+          <tbody>
+            <row>
+              <entry>Location of Word</entry>
+              <entry>Probability</entry>
+              <entry>Total Time for Access (ns)</entry>
+            </row>
+            <row>
+              <entry>In cache</entry>
+              <entry>0.9</entry>
+              <entry>20</entry>
+            </row>
+            <row>
+              <entry>Not in cache, but in main memory</entry>
+              <entry>(0.1)(0.6) = 0.06</entry>
+              <entry>60 + 20 = 80</entry>
+            </row>
+            <row>
+              <entry>Not in cache or main memory</entry>
+              <entry>(0.1)(0.4) = 0.04</entry>
+              <entry>12ms + 60 + 20 = 12,000,080</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <para id="id3646029">So the average access time would be:</para>
+      <para id="id3646033">Avg = (0.9)(20) + (0.06)(80) + (0.04)(12000080) = 
+480,026 ns</para>
+    </section>
+    <section id="id-00054018511975">
+      <title>Suppose that we have a multi-programmed computer in which each job 
+has identical characteristics. In one computation period, T, for a job, half the 
+time is spent in I/O and the other half in processor activity. Each job runs for 
+a total of N periods. Assume that simple round-robin scheduling is used, and 
+that I/O operations can overlap with processor operation. Define the following 
+quantities: </title>
+      <list id="id3705062" list-type="bulleted">
+        <item>Turnaround time = actual time to complete a job.</item>
+        <item>Throughput = average number of jobs completed per time period 
+T</item>
+        <item>Processor utilization = percentage of time that the processor is 
+active (waiting)</item>
+      </list>
+      <para id="id3705090">Compute these quantities for one, two, and four 
+simultaneous jobs, assuming that the period T is distributed in each of the 
+following ways:</para>
+      <list id="id3594051" list-type="enumerated">
+        <item>I/O first half, processor second half </item>
+      </list>
+      <para id="id3594059">When there is one job, it can do I/O or run on the 
+processor whenever it wants. So the quantities are: </para>
+      <list id="id3594065" list-type="bulleted">
+        <item>Turnaround Time = N*T</item>
+        <item>Throughput = 1/N</item>
+        <item>Processor Utilization = 50%</item>
+      </list>
+      <para id="id3594084">When there are two jobs, one starts right away and 
+does I/O. When it switches to run on the CPU, the second can start its I/O. This 
+delays the second job for 1/2*N, but otherwise they alternate between I/O and 
+CPU. Assume the jobs are long, so the extra 1/2 a cycle is insignificant. 
+Then:</para>
+      <list id="id3707116" list-type="bulleted">
+        <item>Turnaround Time = N*T</item>
+        <item>Throughput = 2/N</item>
+        <item>Processor Utilization = 100%</item>
+      </list>
+      <para id="id3707135">When there are 4 jobs, the CPU is round-robin among 
+the four, as is the I/O. This means the jobs are interleaved as:</para>
+      <para id="id3707142">Job1: I/O CPU I/O CPU</para>
+      <para id="id3707155">Job2: I/O CPU I/O CPU</para>
+      <para id="id3707411">Job3: I/O CPU I/O CPU</para>
+      <para id="id3707424">Job4: I/O CPU I/O CPU</para>
+      <para id="id3707438">A job can execute for one cycle T, then it must wait 
+for T before doing another cycle. Again assume the jobs are long so that any 
+initial wait is insignificant. Then:</para>
+      <list id="id3707445" list-type="bulleted">
+        <item>Turnaround Time = (2N-1)*T</item>
+        <item>Throughput = 2/N</item>
+        <item>Processor Utilization = 100%</item>
+        <item>I/O first and fourth quarters, processor second and third quarter 
+</item>
+      </list>
+      <para id="id3712378">The answers for this part are the same as the first. 
+This is easy to see for the case of 1 job and 2 jobs. When there are 4 jobs, the 
+CPU is round-robin among the four, as is the I/O. This means the jobs are 
+interleaved as: </para>
+      <para id="id3712386">Job1: I CP O I CP O</para>
+      <para id="id3606962">Job2: I CP O I CP O</para>
+      <para id="id3606976">Job3: I CP O I CP O</para>
+      <para id="id3606989">Job4: I CP O I CP O</para>
+    </section>
+    <section id="id-138113349313">
+      <title>An I/O-bound program is one that, if run alone, would spend more 
+time waiting for I/O than using the processor. A processor-bound program is the 
+opposite. Suppose a short-term scheduling algorithm favors those programs that 
+have used little processor time in the recent past. </title>
+      <list id="id3609966" list-type="bulleted">
+        <item>Explain why this algorithm favors I/O-bound programs. </item>
+      </list>
+      <para id="id3609976">The algorithm favors I/O bound processes because 
+these will be much less likely to have used the processor recently. As soon as 
+they are done with an I/O burst, they will get to execute on the 
+processor.</para>
+      <list id="id3609984" list-type="bulleted">
+        <item>Explain why this algorithm does not permanently deny processor 
+time to processor-bound programs. </item>
+      </list>
+      <para id="id3609994">This algorithm does not permanently deny processor 
+time to processor-bound programs, because once they have been prevented from 
+using the processor for some time they will be favored by the scheduling 
+algorithm.</para>
+    </section>
+  </content>
+</document>
